@@ -5,3 +5,4 @@ telegram
 pytz
 apscheduler
 google-generativeai
+python-telegram-bot[webhooks]
