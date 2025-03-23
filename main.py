@@ -150,6 +150,37 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         logging.error(f"خطأ في إضافة الاستفسار: {e}")
                         await update.message.reply_text("❌ حدث خطأ أثناء الإضافة.")
 
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    try:
+        user_id = update.message.from_user.id
+        chat_id = update.message.chat_id
+        message = update.message.text
+
+        logging.info(f"تم استقبال رسالة من المستخدم: {user_id} في الدردشة: {chat_id}")
+
+        # إذا كانت الرسالة في الخاص
+        if chat_id == user_id:
+            # إذا كان المستخدم هو المشرف (أنت)
+            if user_id == ADMIN_USER_ID:
+                # معالجة أمر الإضافة
+                if message.startswith("/addfaq"):
+                    try:
+                        parts = [part.strip() for part in message.split("|")]
+                        if len(parts) >= 3:
+                            question = parts[0].replace("/addfaq", "").strip()
+                            answer = parts[1].strip()
+                            category = parts[2].strip()
+
+                            if add_faq(question, answer, category):
+                                await update.message.reply_text("✅ تم إضافة الاستفسار بنجاح!")
+                            else:
+                                await update.message.reply_text("❌ فشل في إضافة الاستفسار.")
+                        else:
+                            await update.message.reply_text("❌ صيغة غير صحيحة. استخدم: /addfaq سؤال | جواب | فئة")
+                    except Exception as e:
+                        logging.error(f"خطأ في إضافة الاستفسار: {e}")
+                        await update.message.reply_text("❌ حدث خطأ أثناء الإضافة.")
+
                 # معالجة أمر الحذف
                 elif message.startswith("/deletefaq"):
                     try:
@@ -179,35 +210,35 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     await update.message.reply_text(response)
 
             # إذا كان المستخدم عاديًا في الخاص
-else:
-    # التحقق من ساعات العمل
-    if not is_within_working_hours():
-        await update.message.reply_text(
-            "عذرًا، البوت يعمل فقط من الساعة 8 صباحًا حتى 7 مساءً بتوقيت السودان.\n"
-            "Sorry, the bot operates only from 8 AM to 7 PM Sudan time."
-        )
-        return  # تجاهل الرسالة خارج ساعات العمل
+            else:
+                # التحقق من ساعات العمل
+                if not is_within_working_hours():
+                    await update.message.reply_text(
+                        "عذرًا، البوت يعمل فقط من الساعة 8 صباحًا حتى 7 مساءً بتوقيت السودان.\n"
+                        "Sorry, the bot operates only from 8 AM to 7 PM Sudan time."
+                    )
+                    return  # تجاهل الرسالة خارج ساعات العمل
 
-    reset_message_count()
+                reset_message_count()
 
-    if user_id not in user_message_count:
-        user_message_count[user_id] = 0
+                if user_id not in user_message_count:
+                    user_message_count[user_id] = 0
 
-    if user_message_count[user_id] >= 10:
-        await update.message.reply_text("عذرًا، لقد تجاوزت الحد المسموح به من الرسائل اليومية.")
-        return
+                if user_message_count[user_id] >= 10:
+                    await update.message.reply_text("عذرًا، لقد تجاوزت الحد المسموح به من الرسائل اليومية.")
+                    return
 
-    user_message_count[user_id] += 1
+                user_message_count[user_id] += 1
 
-    faq_data = get_faq_data()
-    prompt = "أنت معلم لغة إنجليزية محترف. لديك قاعدة بيانات تحتوي على الأسئلة والأجوبة التالية:\n\n"
-    for q, a in faq_data:
-        prompt += f"س: {q}\nج: {a}\n\n"
-    prompt += f"استفسار المستخدم: {message}\n\n"
-    prompt += "أجب على استفسار المستخدم بناءً على قاعدة البيانات إذا كان السؤال متعلقًا بها. إذا لم يكن السؤال موجودًا في قاعدة البيانات، قم بالإجابة بشكل عام كمعلم لغة إنجليزية محترف. أضف في نهاية الرد جملة تحفيزية لتشجيع الطلاب على متابعة القناة، ثم أضف طلبًا لتقييم الخدمة إذا رأيت أن ذلك مناسبًا. حافظ على الرسالة قصيرة إن أمكن وجميلة بصريًا باستخدام الإيموجي وغيرها. إذا سُئلت عن اسمك، أجب برد مختصر بأن اسمك هو بوت QueriesShot للإجابة عن الأسئلة الشائعة."
+                faq_data = get_faq_data()
+                prompt = "أنت معلم لغة إنجليزية محترف. لديك قاعدة بيانات تحتوي على الأسئلة والأجوبة التالية:\n\n"
+                for q, a in faq_data:
+                    prompt += f"س: {q}\nج: {a}\n\n"
+                prompt += f"استفسار المستخدم: {message}\n\n"
+                prompt += "أجب على استفسار المستخدم بناءً على قاعدة البيانات إذا كان السؤال متعلقًا بها. إذا لم يكن السؤال موجودًا في قاعدة البيانات، قم بالإجابة بشكل عام كمعلم لغة إنجليزية محترف. أضف في نهاية الرد جملة تحفيزية لتشجيع الطلاب على متابعة القناة، ثم أضف طلبًا لتقييم الخدمة إذا رأيت أن ذلك مناسبًا. حافظ على الرسالة قصيرة إن أمكن وجميلة بصريًا باستخدام الإيموجي وغيرها. إذا سُئلت عن اسمك، أجب برد مختصر بأن اسمك هو بوت QueriesShot للإجابة عن الأسئلة الشائعة."
 
-    response = generate_gemini_response(prompt)
-    await update.message.reply_text(response)
+                response = generate_gemini_response(prompt)
+                await update.message.reply_text(response)
 
         # إذا كانت الرسالة في المجموعة
         elif chat_id == ALLOWED_GROUP_ID:
@@ -239,7 +270,6 @@ else:
     except Exception as e:
         logging.error(f"❌ خطأ في معالجة الرسالة: {e}")
         await update.message.reply_text("عذرًا، حدث خطأ أثناء معالجة سؤالك. يرجى المحاولة لاحقًا.")
-
 # إنشاء البوت
 app = ApplicationBuilder().token(TOKEN).build()
 
