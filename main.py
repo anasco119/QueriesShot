@@ -110,7 +110,7 @@ def reset_message_count():
 
 # ساعات عمل البوت (بتوقيت السودان)
 WORKING_HOURS_START = 8  # 8 صباحًا
-WORKING_HOURS_END = 22   # 10 مساءً
+WORKING_HOURS_END = 19   # 7 مساءً
 
 # دالة للتحقق من ساعات العمل
 def is_within_working_hours():
@@ -213,6 +213,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             else:
                 # تطبيق نفس القيود المطبقة في المجموعة
                 if not is_within_working_hours():
+                    await update.message.reply_text("عذرًا، البوت يعمل فقط من الساعة 8 صباحًا حتى 7 مساءً بتوقيت السودان.")
                     return  # تجاهل الرسالة خارج ساعات العمل
 
                 reset_message_count()
