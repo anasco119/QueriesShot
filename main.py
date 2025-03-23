@@ -149,37 +149,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     except Exception as e:
                         logging.error(f"خطأ في إضافة الاستفسار: {e}")
                         await update.message.reply_text("❌ حدث خطأ أثناء الإضافة.")
-# دالة لمعالجة الرسائل
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    try:
-        user_id = update.message.from_user.id
-        chat_id = update.message.chat_id
-        message = update.message.text
-
-        logging.info(f"تم استقبال رسالة من المستخدم: {user_id} في الدردشة: {chat_id}")
-
-        # إذا كانت الرسالة في الخاص
-        if chat_id == user_id:
-            # إذا كان المستخدم هو المشرف (أنت)
-            if user_id == ADMIN_USER_ID:
-                # معالجة أمر الإضافة
-                if message.startswith("/addfaq"):
-                    try:
-                        parts = [part.strip() for part in message.split("|")]
-                        if len(parts) >= 3:
-                            question = parts[0].replace("/addfaq", "").strip()
-                            answer = parts[1].strip()
-                            category = parts[2].strip()
-
-                            if add_faq(question, answer, category):
-                                await update.message.reply_text("✅ تم إضافة الاستفسار بنجاح!")
-                            else:
-                                await update.message.reply_text("❌ فشل في إضافة الاستفسار.")
-                        else:
-                            await update.message.reply_text("❌ صيغة غير صحيحة. استخدم: /addfaq سؤال | جواب | فئة")
-                    except Exception as e:
-                        logging.error(f"خطأ في إضافة الاستفسار: {e}")
-                        await update.message.reply_text("❌ حدث خطأ أثناء الإضافة.")
 
                 # معالجة أمر الحذف
                 elif message.startswith("/deletefaq"):
@@ -211,9 +180,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             # إذا كان المستخدم عاديًا في الخاص
             else:
-                # تطبيق نفس القيود المطبقة في المجموعة
-                if not is_within_working_hours():
-                    await update.message.reply_text("عذرًا، البوت يعمل فقط من الساعة 8 صباحًا حتى 7 مساءً بتوقيت السودان.")
+                # التحقق من ساعات العمل
+                if not is_within_working_hours()
+                    await update.message.reply_text(
+    "عذرًا، البوت يعمل فقط من الساعة 8 صباحًا حتى 7 مساءً بتوقيت السودان.\n"
+    "Sorry, the bot operates only from 8 AM to 7 PM Sudan time."
+                )
                     return  # تجاهل الرسالة خارج ساعات العمل
 
                 reset_message_count()
@@ -267,7 +239,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         logging.error(f"❌ خطأ في معالجة الرسالة: {e}")
         await update.message.reply_text("عذرًا، حدث خطأ أثناء معالجة سؤالك. يرجى المحاولة لاحقًا.")
-
 
 # إنشاء البوت
 app = ApplicationBuilder().token(TOKEN).build()
