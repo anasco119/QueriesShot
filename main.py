@@ -16,6 +16,7 @@ TOKEN = os.getenv("FAQBOT_TOKEN")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 ALLOWED_GROUP_ID = int(os.getenv("ALLOWED_GROUP_ID"))  # معرف المجموعة المسموح بها
 ADMIN_USER_ID = int(os.getenv("ADMIN_USER_ID"))  # معرف المستخدم المشرف (أنت)
+WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # عنوان URL الخاص بالويبهوك
 
 # تهيئة Gemini API
 try:
@@ -243,6 +244,16 @@ app = ApplicationBuilder().token(TOKEN).build()
 # إضافة المعالجات
 app.add_handler(MessageHandler(filters.TEXT, handle_message))  # تمت إزالة ~filters.COMMAND
 
-# تشغيل البوت
-logging.info("✅ البوت يعمل الآن...")
-app.run_polling()
+# دالة رئيسية لتشغيل البوت
+def main():
+    logging.info("✅ البوت يعمل الآن...")
+    PORT = int(os.environ.get("PORT", 8080))  # الحصول على المنفذ من البيئة أو استخدام 8080 افتراضيًا
+    app.run_webhook(
+        listen="0.0.0.0",
+        port=PORT,
+        url_path=TOKEN,
+        webhook_url=f"{WEBHOOK_URL}/{TOKEN}"  # تعيين عنوان الويب هوك
+    )
+
+if __name__ == "__main__":
+    main()
