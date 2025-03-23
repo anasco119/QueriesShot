@@ -17,7 +17,6 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 ALLOWED_GROUP_ID = int(os.getenv("ALLOWED_GROUP_ID"))  # معرف المجموعة المسموح بها
 ADMIN_USER_ID = int(os.getenv("ADMIN_USER_ID"))  # معرف المستخدم المشرف (أنت)
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # عنوان URL الخاص بالويبهوك
-PORT = os.getenv("PORT")
 
 # تهيئة Gemini API
 try:
