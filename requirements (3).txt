@@ -1,0 +1,7 @@
+
+python-telegram-bot>=20.0
+requests
+telegram
+pytz
+apscheduler
+google-generativeai
