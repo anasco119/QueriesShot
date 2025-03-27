@@ -328,7 +328,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         )
                         await asyncio.sleep(10)
                         await mute_notification.delete()
-                else:
+                    else:
                     user_violations[user_id] = 1
             except Exception as e:
                 logging.error(f"خطأ في معالجة المخالفة: {e}")
