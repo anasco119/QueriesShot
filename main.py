@@ -304,7 +304,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 
                 # كتم العضو لمدة 10 دقائق إذا تكرر منه ذلك
                     if user_id in user_violations:
-                    user_violations[user_id] += 1
+                        user_violations[user_id] += 1
                     if user_violations[user_id] >= 3:  # بعد 3 مخالفات
                         from datetime import datetime, timedelta
                         mute_duration = timedelta(minutes=10)
