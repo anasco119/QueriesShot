@@ -267,7 +267,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 prompt = "أنت معلم لغة إنجليزية محترف. لديك قاعدة بيانات تحتوي على الأسئلة والأجوبة التالية:\n\n"
             
                 for q, a in faq_data:
-                prompt += f"س: {q}\nج: {a}\n\n"
+                    prompt += f"س: {q}\nج: {a}\n\n"
             
                 prompt += f"استفسار المستخدم: {message}\n\n"
             
