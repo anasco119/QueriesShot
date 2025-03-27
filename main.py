@@ -259,7 +259,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
                 الرد يجب أن يكون رقمًا فقط بين 1 و5."""
         
-                intent = generate_gemini_response(intent_prompt).strip()
+            intent = generate_gemini_response(intent_prompt).strip()
 
         # معالجة حسب النية
             if intent in ["1", "2", "3"]:  # استفسار أو دراسة أو تصحيح
