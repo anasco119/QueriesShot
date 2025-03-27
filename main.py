@@ -217,7 +217,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 # إذا كانت رسالة عادية من المشرف
                 else:
                 # يمكنك إرسال أي رسالة في الخاص وسيقوم البوت بالرد عليها
-                faq_data = get_faq_data()
+                    faq_data = get_faq_data()
                 prompt = "أنت معلم لغة إنجليزية محترف. لديك قاعدة بيانات تحتوي على الأسئلة والأجوبة التالية:\n\n"
                 for q, a in faq_data:
                     prompt += f"س: {q}\nج: {a}\n\n"
