@@ -335,9 +335,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 
         # النية "5" أو أي قيمة أخرى يتم تجاهلها
 
-except Exception as e:
-    logging.error(f"❌ خطأ في معالجة الرسالة: {e}")
-    await update.message.reply_text("عذرًا، حدث خطأ أثناء معالجة سؤالك. يرجى المحاولة لاحقًا.")
+    except Exception as e:
+        logging.error(f"❌ خطأ في معالجة الرسالة: {e}")
+        await update.message.reply_text("عذرًا، حدث خطأ أثناء معالجة سؤالك. يرجى المحاولة لاحقًا.")
 # إنشاء البوت
 app = ApplicationBuilder().token(TOKEN).build()
 
