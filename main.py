@@ -225,7 +225,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if not is_within_working_hours():
                 return  # تجاهل الرسالة خارج ساعات العمل
 
-    reset_message_count()
+        reset_message_count()
 
     if user_id not in user_message_count:
         user_message_count[user_id] = 0
