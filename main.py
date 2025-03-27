@@ -287,7 +287,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
             elif intent == "4":  # مخالفة أو سلوك غير لائق
             # حذف الرسالة وإرسال تحذير
-                try:
+            try:
                     await update.message.delete()
                     warning_msg = ("⚠️ تم حذف الرسالة بسبب مخالفتها لقواعد المجموعة. "
                             "نرحب بالأسئلة والمناقشات المتعلقة بتعلم اللغة الإنجليزية، "
