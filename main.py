@@ -17,7 +17,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 ALLOWED_GROUP_ID = int(os.getenv("ALLOWED_GROUP_ID"))  # معرف المجموعة المسموح بها
 ADMIN_USER_ID = int(os.getenv("ADMIN_USER_ID"))  # معرف المستخدم المشرف (أنت)
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # عنوان URL الخاص بالويبهوك
-
+user_violations = {}  # لتتبع عدد مخالفات كل مستخدم
 # تهيئة Gemini API
 try:
     genai.configure(api_key=GEMINI_API_KEY)
@@ -219,41 +219,108 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 response = generate_gemini_response(prompt)
                 await update.message.reply_text(response)
 
-        # إذا كانت الرسالة في المجموعة
-        elif chat_id == ALLOWED_GROUP_ID:
-            # تطبيق القيود المطبقة في المجموعة
-            if not is_within_working_hours():
-                return  # تجاهل الرسالة خارج ساعات العمل
+# إذا كانت الرسالة في المجموعة
+elif chat_id == ALLOWED_GROUP_ID:
+    # تطبيق القيود المطبقة في المجموعة
+    if not is_within_working_hours():
+        return  # تجاهل الرسالة خارج ساعات العمل
 
-            reset_message_count()
+    reset_message_count()
 
-            if user_id not in user_message_count:
-                user_message_count[user_id] = 0
+    if user_id not in user_message_count:
+        user_message_count[user_id] = 0
 
-            if user_message_count[user_id] >= 10:
-                await update.message.reply_text("عذرًا، لقد تجاوزت الحد المسموح به من الرسائل اليومية.")
-                return
+    if user_message_count[user_id] >= 10:
+        await update.message.reply_text("عذرًا، لقد تجاوزت الحد المسموح به من الرسائل اليومية.")
+        return
 
-            user_message_count[user_id] += 1
+    user_message_count[user_id] += 1
 
-            faq_data = get_faq_data()
-            prompt = "أنت معلم لغة إنجليزية محترف. لديك قاعدة بيانات تحتوي على الأسئلة والأجوبة التالية:\n\n"
-            for q, a in faq_data:
-                prompt += f"س: {q}\nج: {a}\n\n"
-                prompt += f"استفسار المستخدم: {message}\n\n"
-                prompt += ("أجب على استفسار المستخدم استنادًا إلى قاعدة البيانات إذا كان مرتبطًا بها. "
-    "في حال عدم العثور على إجابة مباشرة، قدّم ردًا عامًا بأسلوب أستاذ لغة إنجليزية محترف، مع الحرص على الوضوح والإيجاز. "
-    "اجعل الرد جذابًا بصريًا باستخدام الإيموجي عند الحاجة، دون مبالغة. "
-    "لتجنب الإزعاج، لا تُضمّن جملة تحفيزية أو طلب تقييم إلا إذا كان ذلك مناسبًا في سياق الرد. "
-    "إذا سُئلت عن اسمك، أجب باختصار بأنك QueriesShot، بوت متخصص في الإجابة عن الأسئلة الشائعة في تعلم اللغة الإنجليزية."
-)
-            response = generate_gemini_response(prompt)
-            await update.message.reply_text(response)
+    # تحقق من نية الرسالة أولاً
+    intent_prompt = f"""حدد نية الرسالة التالية من الخيارات التالية فقط:
+    1. إستفسار
+    2. ذو علاقة بدراسة باللغة الانجليزية
+    3. خطأ إملائي وغرامر
+    4. مخالفة، سلوك غير لائق أو ترويج ومضايقة
+    5. أخرى (غير ذات صلة)
 
+    الرسالة: "{message}"
+
+    الرد يجب أن يكون رقمًا فقط بين 1 و5."""
+    
+    intent = generate_gemini_response(intent_prompt).strip()
+
+    # معالجة حسب النية
+    if intent in ["1", "2", "3"]:  # استفسار أو دراسة أو تصحيح
+        faq_data = get_faq_data()
+        prompt = "أنت معلم لغة إنجليزية محترف. لديك قاعدة بيانات تحتوي على الأسئلة والأجوبة التالية:\n\n"
+        
+        for q, a in faq_data:
+            prompt += f"س: {q}\nج: {a}\n\n"
+        
+        prompt += f"استفسار المستخدم: {message}\n\n"
+        
+        if intent == "1":  # استفسار عام
+            prompt += "أجب على استفسار المستخدم استنادًا إلى قاعدة البيانات إذا كان مرتبطًا بها."
+        elif intent == "2":  # دراسة باللغة الإنجليزية
+            prompt += "الرسالة متعلقة بدراسة اللغة الإنجليزية. قدم إجابة مفصلة ومنظمة."
+        elif intent == "3":  # تصحيح أخطاء
+            prompt += "الرسالة تحتوي على أخطاء إملائية أو نحوية. قم بتصحيح الأخطاء أولاً ثم اشرحها بطريقة تعليمية."
+        
+        prompt += (" أجب بأسلوب أستاذ لغة إنجليزية محترف، مع الحرص على الوضوح والإيجاز. "
+                  "اجعل الرد جذابًا بصريًا باستخدام الإيموجي عند الحاجة، دون مبالغة. "
+                  "لتجنب الإزعاج، لا تُضمّن جملة تحفيزية أو طلب تقييم إلا إذا كان ذلك مناسبًا في سياق الرد.")
+        
+        response = generate_gemini_response(prompt)
+        await update.message.reply_text(response)
+        
+    elif intent == "4":  # مخالفة أو سلوك غير لائق
+    # حذف الرسالة وإرسال تحذير
+    try:
+        await update.message.delete()
+        warning_msg = ("⚠️ تم حذف الرسالة بسبب مخالفتها لقواعد المجموعة. "
+                     "نرحب بالأسئلة والمناقشات المتعلقة بتعلم اللغة الإنجليزية، "
+                     "ولكن نرفض السلوك غير اللائق أو المضايقة. يرجى مراجعة قواعد المجموعة.")
+        await context.bot.send_message(
+            chat_id=chat_id,
+            text=warning_msg,
+            reply_to_message_id=update.message.message_id
+        )
+        
+        # كتم العضو لمدة 10 دقائق إذا تكرر منه ذلك
+        if user_id in user_violations:
+            user_violations[user_id] += 1
+            if user_violations[user_id] >= 3:  # بعد 3 مخالفات
+                from datetime import datetime, timedelta
+                mute_duration = timedelta(minutes=10)  # تحديد المدة (10 دقائق)
+                mute_until = datetime.now() + mute_duration
+                
+                await context.bot.restrict_chat_member(
+                    chat_id=chat_id,
+                    user_id=user_id,
+                    until_date=mute_until,  # تاريخ انتهاء الكتم
+                    permissions=ChatPermissions(
+                        can_send_messages=False,
+                        can_send_media_messages=False,
+                        can_send_polls=False,
+                        can_send_other_messages=False,
+                        can_add_web_page_previews=False
+                    )
+                )
+                await context.bot.send_message(
+                    chat_id=chat_id,
+                    text=f"تم كتم العضو لمدة 10 دقائق بسبب تكرار المخالفات."
+                )
+        else:
+            user_violations[user_id] = 1
     except Exception as e:
-        logging.error(f"❌ خطأ في معالجة الرسالة: {e}")
-        await update.message.reply_text("عذرًا، حدث خطأ أثناء معالجة سؤالك. يرجى المحاولة لاحقًا.")
+        logging.error(f"خطأ في معالجة المخالفة: {e}")
+            
+    # النية "5" أو أي قيمة أخرى يتم تجاهلها
 
+except Exception as e:
+    logging.error(f"❌ خطأ في معالجة الرسالة: {e}")
+    await update.message.reply_text("عذرًا، حدث خطأ أثناء معالجة سؤالك. يرجى المحاولة لاحقًا.")
 # إنشاء البوت
 app = ApplicationBuilder().token(TOKEN).build()
 
