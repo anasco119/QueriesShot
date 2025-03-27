@@ -330,8 +330,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         await mute_notification.delete()
                     else:
                       user_violations[user_id] = 1
-          except Exception as e:
-              logging.error(f"خطأ في معالجة المخالفة: {e}")
+              except Exception as e:
+                logging.error(f"خطأ في معالجة المخالفة: {e}")
                 
         # النية "5" أو أي قيمة أخرى يتم تجاهلها
 
