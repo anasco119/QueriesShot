@@ -248,7 +248,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             user_message_count[user_id] += 1
 
                 # تحقق من نية الرسالة أولاً
-                intent_prompt = f"""حدد نية الرسالة التالية من الخيارات التالية فقط:
+            intent_prompt = f"""حدد نية الرسالة التالية من الخيارات التالية فقط:
                 1. إستفسار
                 2. ذو علاقة بدراسة باللغة الانجليزية
                 3. خطأ إملائي وغرامر
