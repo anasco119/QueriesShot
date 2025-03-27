@@ -220,7 +220,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 await update.message.reply_text(response)
 
 # إذا كانت الرسالة في المجموعة
-elif chat_id == ALLOWED_GROUP_ID:
+    elif chat_id == ALLOWED_GROUP_ID:
     # تطبيق القيود المطبقة في المجموعة
     if not is_within_working_hours():
         return  # تجاهل الرسالة خارج ساعات العمل
