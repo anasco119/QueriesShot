@@ -285,7 +285,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     response = generate_gemini_response(prompt)
                     await update.message.reply_text(response)
             
-            elif intent == "4":  # مخالفة أو سلوك غير لائق
+        elif intent == "4":  # مخالفة أو سلوك غير لائق
             # حذف الرسالة وإرسال تحذير
             try:
                     await update.message.delete()
