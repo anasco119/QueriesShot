@@ -381,7 +381,7 @@ async def confirm_reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "✅ تم إعادة تعيين قاعدة البيانات بنجاح!\n"
                 f"تم إنشاء نسخة احتياطية في: {temp_path}"
             )
-         else:
+        else:
             await update.message.reply_text("ℹ️ لم يتم العثور على ملف قاعدة البيانات!")
             
     except Exception as e:
