@@ -339,54 +339,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logging.error(f"❌ خطأ في معالجة الرسالة: {e}")
         await update.message.reply_text("عذرًا، حدث خطأ أثناء معالجة سؤالك. يرجى المحاولة لاحقًا.")
 
+
 async def reset_database(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # التحقق من الصلاحيات
-    if str(update.effective_user.id) not in ADMIN_USER_ID:
-        await update.message.reply_text("⛔ هذا الأمر متاح للمشرفين فقط!")
-        return
-    
-    confirmation_key = str(uuid.uuid4())[:8]
-    context.user_data['db_confirmation'] = confirmation_key
-    
-    await update.message.reply_text(
-        f"⚠️ تحذير: هذا الأمر سيحذف جميع البيانات بشكل دائم!\n"
-        f"للتأكيد، أرسل:\n"
-        f"/confirm_reset {confirmation_key}"
-    )
-
-async def confirm_reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not await is_admin(update, context):
-        return
-    
-    try:
-        args = context.args
-        if not args or args[0] != context.user_data.get('db_confirmation'):
-            await update.message.reply_text("❌ كود التأكيد غير صحيح!")
-            return
-            
-        # بدء عملية الحذف
-        await update.message.reply_text("⌛ جاري حذف قاعدة البيانات...")
-        
-        db_path = 'faq.db'
-        
-
-        # الحذف الفعلي
-        if os.path.exists(db_path):
-            os.remove(db_path)
-            initialize_database()  # إعادة الإنشاء
-            
-
-            await update.message.reply_text(
-                "✅ تم إعادة تعيين قاعدة البيانات بنجاح!\n"
-                f"تم إنشاء نسخة احتياطية في: {temp_path}"
-            )
-        else:
-            await update.message.reply_text("ℹ️ لم يتم العثور على ملف قاعدة البيانات!")
-            
-    except Exception as e:
-        logging.error(f"Database reset error: {e}")
-        await update.message.reply_text("❌ فشل في إعادة تعيين قاعدة البيانات!")
-        async def reset_database(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # التحقق من الصلاحيات
     if str(update.effective_user.id) not in ADMIN_USER_ID:
         await update.message.reply_text("⛔ هذا الأمر متاح للمشرفين فقط!")
