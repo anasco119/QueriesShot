@@ -386,7 +386,7 @@ async def confirm_reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
     except Exception as e:
         logging.error(f"Database reset error: {e}")
-         await update.message.reply_text("❌ فشل في إعادة تعيين قاعدة البيانات!")
+        await update.message.reply_text("❌ فشل في إعادة تعيين قاعدة البيانات!")
             
 # إنشاء البوت
 app = ApplicationBuilder().token(TOKEN).build()
