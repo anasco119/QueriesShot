@@ -390,10 +390,10 @@ async def confirm_reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
 # إنشاء البوت
 app = ApplicationBuilder().token(TOKEN).build()
-application.add_handler(CommandHandler("reset_db", reset_database))
-application.add_handler(CommandHandler("confirm_reset", confirm_reset))
 # إضافة المعالجات
 app.add_handler(MessageHandler(filters.TEXT, handle_message))  # تمت إزالة ~filters.COMMAND
+app.add_handler(CommandHandler("reset_db", reset_database))
+app.add_handler(CommandHandler("confirm_reset", confirm_reset))
 
 # دالة رئيسية لتشغيل البوت
 def main():
