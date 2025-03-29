@@ -1,6 +1,8 @@
 import os
 import sqlite3
+import shutil
 import logging
+import uuid
 import time
 from datetime import datetime, timedelta
 from telegram import Update
@@ -249,7 +251,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
                 # تحقق من نية الرسالة أولاً
             intent_prompt = f"""حدد نية الرسالة التالية من الخيارات التالية فقط:
-                1. إستفسار أو أي مسألة تتعلق القناة أو طلب مساعدة ذو علاقة بالتعلم
+                1. إستفسار أو أي مسألة تتعلق بالقناة أو أي طلب مساعدة ذو علاقة بالتعلم
                 2. ذو علاقة بدراسة اللغة الانجليزية
                 3. خطأ إملائي وغرامر
                 4. مخالفة، سلوك غير لائق أو ترويج ومضايقة أو كلمات بذئية أو رسائل spam 
