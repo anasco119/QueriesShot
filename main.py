@@ -54,6 +54,12 @@ try:
                     answer TEXT,
                     category TEXT
                 )''')
+    cur.execute('''CREATE TABLE IF NOT EXISTS channel_messages (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    message_id INTEGER,
+                    chat_id INTEGER,
+                    text TEXT
+                )''')
     conn.commit()
     logging.info("✅ تم إنشاء الجداول بنجاح!")
 except Exception as e:
@@ -70,6 +76,26 @@ def add_faq(question, answer, category):
     except Exception as e:
         logging.error(f"❌ خطأ في إضافة استفسار جديد: {e}")
         return False  # إرجاع False إذا حدث خطأ
+
+async def store_channel_message(update: Update):
+    """تخزين الرسالة فقط إذا كانت من القناة الرسمية"""
+    try:
+        message_id = update.message.message_id
+        chat_id = update.message.chat_id
+        text = update.message.text
+
+        # 🔹 التحقق من أن الرسالة قادمة من القناة الرسمية
+        if str(chat_id) == os.getenv("CHANNEL_ID"):
+            cur.execute("INSERT INTO channel_messages (message_id, chat_id, text) VALUES (?, ?, ?)",
+                        (message_id, chat_id, text))
+            conn.commit()
+            logging.info(f"✅ تم تخزين رسالة من القناة: {text}")
+        else:
+            logging.info(f"⚠️ تم تجاهل رسالة لأنها ليست من القناة الرسمية. (Chat ID: {chat_id})")
+
+    except Exception as e:
+        logging.error(f"❌ خطأ في تخزين رسالة القناة: {e}")
+
 
 # دالة لحذف استفسار برقمه
 def delete_faq(faq_id):
@@ -89,6 +115,14 @@ def get_faq_data():
         data = cur.fetchall()
         logging.info(f"✅ تم استخراج {len(data)} سؤالًا من قاعدة البيانات.")
         return data
+        cur.execute("SELECT text FROM channel_messages")
+        channel_entries = [(text, "معلومة من القناة") for (text,) in cur.fetchall()]
+        
+        return faq_entries + channel_entries  # 🔹 دمج البيانات المخزنة مع قاعدة الأسئلة
+    except Exception as e:
+        logging.error(f"❌ خطأ في جلب بيانات الأسئلة: {e}")
+        return []
+
     except Exception as e:
         logging.error(f"❌ خطأ في استخراج البيانات من قاعدة البيانات: {e}")
         return []
@@ -285,11 +319,17 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if intent in ["1", "2", "3", "4"]:  # استفسار أو دراسة أو تصحيح
                 faq_data = get_faq_data()
                 prompt = "أنت معلم لغة إنجليزية محترف. لديك قاعدة بيانات تحتوي على الأسئلة والأجوبة التالية:\n\n"
+                if intent in ["2", "3"]:
+                prompt = "أنت معلم لغة إنجليزية محترف. لديك قاعدة بيانات تحتوي على الأسئلة والأجوبة التالية:\n\n"
+
+                for q, a in faq_data:
+                  prompt += f"س: {q}\nج: {a}\n\n"
+
+                prompt += f"استفسار المستخدم: {message}\n\n"
 
                 for q, a in faq_data:
                     prompt += f"س: {q}\nج: {a}\n\n"
 
-                prompt += f"استفسار المستخدم: {message}\n\n"
 
                 if intent == "1":  # استفسار عام
                     prompt += "أجب على استفسار المستخدم استنادًا إلى قاعدة البيانات إذا كان مرتبطًا بها يجب ان يكون الرد بنفس لغة الاستفسار."
