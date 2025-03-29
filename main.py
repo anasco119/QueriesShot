@@ -93,9 +93,9 @@ async def store_channel_message(update: Update):
                 cur.execute("SELECT COUNT(*) FROM channel_messages")
                 count = cur.fetchone()[0]
 
-            if count > 10:
+            if count > 5:
             # حذف أقدم الرسائل للحفاظ على العدد عند 10 فقط
-                cur.execute("DELETE FROM channel_messages WHERE id IN (SELECT id FROM channel_messages ORDER BY id ASC LIMIT ?)", (count - 10,)
+                cur.execute("DELETE FROM channel_messages WHERE id IN (SELECT id FROM channel_messages ORDER BY id ASC LIMIT ?)", (count - 5,)
             conn.commit()
             logging.info(f"✅ تم تخزين رسالة من القناة: {text}")
         else:
