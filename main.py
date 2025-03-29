@@ -282,7 +282,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
         # معالجة حسب النية
-            if intent in ["1", "2", "3"]:  # استفسار أو دراسة أو تصحيح
+            if intent in ["1", "2", "3", "4"]:  # استفسار أو دراسة أو تصحيح
                 faq_data = get_faq_data()
                 prompt = "أنت معلم لغة إنجليزية محترف. لديك قاعدة بيانات تحتوي على الأسئلة والأجوبة التالية:\n\n"
 
@@ -326,7 +326,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     logging.info(f"قيمة intent: '{intent}'، نوعها: {type(intent)}")
 
                     try:
-                        await update.message.delete()
+                        
                         logging.info("🗑️ [LOG] - تم حذف الرسالة المخالفة بنجاح.")
                         print("🗑️ [LOG] - تم حذف الرسالة المخالفة بنجاح.")
 
@@ -339,7 +339,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                             text=warning_msg,
                             reply_to_message_id=update.message.message_id
                         )
-                        
+                        await update.message.delete()
                         logging.info("⚠️ [LOG] - تم إرسال رسالة تحذيرية للمستخدم.")
                         print("⚠️ [LOG] - تم إرسال رسالة تحذيرية للمستخدم.")
 
