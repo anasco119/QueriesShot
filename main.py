@@ -4,7 +4,9 @@ import shutil
 import logging
 import uuid
 import time
+import asyncio
 from datetime import datetime, timedelta
+from telegram import ChatPermissions
 from telegram import Update
 from telegram.ext import (
     ApplicationBuilder,
@@ -18,6 +20,8 @@ import pytz  # إضافة مكتبة pytz لضبط التوقيت
 
 # تهيئة التسجيل (logging)
 logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
 
 # قراءة المتغيرات من البيئة
 TOKEN = os.getenv("FAQBOT_TOKEN")
@@ -117,7 +121,7 @@ def reset_message_count():
         logging.info("✅ تم إعادة تعيين عدد الرسائل للمستخدمين.")
 
 # ساعات عمل البوت (بتوقيت السودان)
-WORKING_HOURS_START = 8  # 8 صباحًا
+WORKING_HOURS_START = 6  # 8 صباحًا
 WORKING_HOURS_END = 19   # 7 مساءً
 
 # دالة للتحقق من ساعات العمل
@@ -129,9 +133,13 @@ def is_within_working_hours():
 # دالة لمعالجة الرسائل
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
+        if not update.message:
+            print("⚠️ [LOG] - لا توجد رسالة في التحديث. قد يكون السبب أنه تحديث غير نصي.")
+            return
         user_id = update.message.from_user.id
         chat_id = update.message.chat_id
         message = update.message.text
+        print(f"🔍 [LOG] - استلمنا رسالة من المستخدم {user_id} في المجموعة {chat_id}: {message}")
 
         logging.info(f"تم استقبال رسالة من المستخدم: {user_id} في الدردشة: {chat_id}")
 
@@ -221,7 +229,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     "في حال عدم العثور على إجابة مباشرة، قدّم ردًا عامًا بأسلوب أستاذ لغة إنجليزية محترف، مع الحرص على الوضوح والإيجاز. "
                     "اجعل الرد جذابًا بصريًا باستخدام الإيموجي عند الحاجة، دون مبالغة. "
                     "لتجنب الإزعاج، لا تُضمّن جملة تحفيزية أو طلب تقييم إلا إذا كان ذلك مناسبًا في سياق الرد. ")
-                               
+
                 # إذا كانت رسالة عادية من المشرف
                 else:
                 # يمكنك إرسال أي رسالة في الخاص وسيقوم البوت بالرد عليها
@@ -266,23 +274,31 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 الرسالة: "{message}"
 
                 الرد يجب أن يكون رقمًا فقط بين 1 و5."""
-        
+
             intent = generate_gemini_response(intent_prompt).strip()
+            intent = str(int(intent))
+            logging.info(f"🔍 [LOG] - النية المستلمة من Gemini: {intent}")
+            print(f"🔍 [LOG] - النية المستلمة من Gemini: {intent}")  # طباعة في الكونسول
+
 
         # معالجة حسب النية
             if intent in ["1", "2", "3"]:  # استفسار أو دراسة أو تصحيح
                 faq_data = get_faq_data()
                 prompt = "أنت معلم لغة إنجليزية محترف. لديك قاعدة بيانات تحتوي على الأسئلة والأجوبة التالية:\n\n"
-            
+
                 for q, a in faq_data:
                     prompt += f"س: {q}\nج: {a}\n\n"
-            
+
                 prompt += f"استفسار المستخدم: {message}\n\n"
-            
+
                 if intent == "1":  # استفسار عام
-                    prompt += "أجب على استفسار المستخدم استنادًا إلى قاعدة البيانات إذا كان مرتبطًا بها."
+                    prompt += "أجب على استفسار المستخدم استنادًا إلى قاعدة البيانات إذا كان مرتبطًا بها يجب ان يكون الرد بنفس لغة الاستفسار."
+                    response = generate_gemini_response(prompt)
+                    await update.message.reply_text(response)
                 elif intent == "2":  # دراسة باللغة الإنجليزية
-                    prompt += " الرسالة متعلقة بدراسة اللغة الإنجليزية. قدم إجابة مفصلة ومنظمة و قصيرة."
+                    prompt += " الرسالة متعلقة بدراسة اللغة الإنجليزية. قدم إجابة مفصلة ومنظمة و قصيرة و يجب ان يكون الرد بنفس لغة الاستفسار."
+                    response = generate_gemini_response(prompt)
+                    await update.message.reply_text(response)
                 elif intent == "3":  # تصحيح أخطاء
                     prompt += """الرسالة تحتوي على أخطاء إملائية أو نحوية.  
 ✅ قم بتصحيح الأخطاء أولاً، ثم قدّم شرحًا تعليمياً بسيطًا في رسالة قصيرة.  
@@ -291,67 +307,95 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 🎯 الهدف هو مساعدة المستخدم دون إزعاجه، لذا استخدم أسلوبًا لبقًا ومشجعًا في البداية.  
 ✍️ مثال على التنسيق المطلوب:  
 
-🔹 **خطأ:** [الجملة الأصلية]  
-✅ **تصحيح:** [الجملة المصححة]  
-💡 **لماذا؟** [شرح قصير ومباشر]  
+🔹 خطأ: [الجملة الأصلية]  
+✅ تصحيح: [الجملة المصححة]  
+💡 لماذا؟: [شرح قصير ومباشر]  
 
-📌 اجعل الأسلوب وديًا واحترافيًا، وكأنك مدرس لطيف يساعد الطلاب دون إشعارهم بالحرج."""
-       
+📌 اجعل الأسلوب وديًا واحترافيًا، وكأنك مدرس لطيف يساعد الطلاب دون إشعارهم بالحرج و لا تستخدم نص عريض باي شكل من الاشكال و باللغة الانجليزية."""
+
                     prompt += (" أجب بأسلوب أستاذ لغة إنجليزية محترف، مع الحرص على الوضوح والإيجاز. "
                     "اجعل الرد جذابًا بصريًا باستخدام الإيموجي عند الحاجة، دون مبالغة. "
                     "لتجنب الإزعاج، لا تُضمّن جملة تحفيزية أو طلب تقييم إلا إذا كان ذلك مناسبًا في سياق الرد.")
-            
+
                     response = generate_gemini_response(prompt)
                     await update.message.reply_text(response)
-            
-        elif intent == "4":  # مخالفة أو سلوك غير لائق
-            # حذف الرسالة وإرسال تحذير
-            try:
-                    await update.message.delete()
-                    warning_msg = ("⚠️ تم حذف الرسالة بسبب مخالفتها لقواعد المجموعة. "
-                            "نرحب بالأسئلة والمناقشات المتعلقة بتعلم اللغة الإنجليزية، "
-                            "ولكن نرفض السلوك غير اللائق أو المضايقة. يرجى مراجعة قواعد المجموعة.")
-                    sent_warning = await context.bot.send_message(
-                    chat_id=chat_id,
-                    text=warning_msg,
-                    reply_to_message_id=update.message.message_id
-                )
-                
-                # حذف رسالة التحذير بعد 10 ثوانٍ
-                    await asyncio.sleep(10)
-                    await sent_warning.delete()
-                
-                # كتم العضو لمدة 10 دقائق إذا تكرر منه ذلك
-                    if user_id in user_violations:
-                        user_violations[user_id] += 1
-                    if user_violations[user_id] >= 3:  # بعد 3 مخالفات
-                        from datetime import datetime, timedelta
-                        mute_duration = timedelta(minutes=10)
-                        mute_until = datetime.now() + mute_duration
-                        
-                        await context.bot.restrict_chat_member(
+                elif intent.strip() == "4":  # يحذف كل الفراغات والأحرف الخفية
+            # مخالفة أو سلوك غير لائق
+                    logging.info("🚨 [LOG] - دخلنا في جزء المخالفات.")
+                    print(f"قيمة intent: '{intent}'، نوعها: {type(intent)}، طولها: {len(intent)}")
+                    logging.info(f"قيمة intent: '{intent}'، نوعها: {type(intent)}")
+
+                    try:
+                        await update.message.delete()
+                        logging.info("🗑️ [LOG] - تم حذف الرسالة المخالفة بنجاح.")
+                        print("🗑️ [LOG] - تم حذف الرسالة المخالفة بنجاح.")
+
+                        warning_msg = ("⚠️ تم حذف الرسالة بسبب مخالفتها لقواعد المجموعة. "
+                           "نرحب بالأسئلة والمناقشات المتعلقة بتعلم اللغة الإنجليزية، "
+                           "ولكن نرفض السلوك غير اللائق أو المضايقة. يرجى مراجعة قواعد المجموعة.")
+
+                        sent_warning = await context.bot.send_message(
                             chat_id=chat_id,
-                            user_id=user_id,
-                            until_date=mute_until,
-                            permissions=ChatPermissions(
-                                can_send_messages=False,
-                                can_send_media_messages=False,
-                                can_send_polls=False,
-                                can_send_other_messages=False,
-                                can_add_web_page_previews=False
-                            )
+                            text=warning_msg,
+                            reply_to_message_id=update.message.message_id
                         )
+                        
+                        logging.info("⚠️ [LOG] - تم إرسال رسالة تحذيرية للمستخدم.")
+                        print("⚠️ [LOG] - تم إرسال رسالة تحذيرية للمستخدم.")
+
+            # حذف رسالة التحذير بعد 10 ثوانٍ
+                        await asyncio.sleep(10)
+                        await sent_warning.delete()
+                        logging.info("🗑️ [LOG] - تم حذف رسالة التحذير بعد 10 ثوانٍ.")
+                        print("🗑️ [LOG] - تم حذف رسالة التحذير بعد 10 ثوانٍ.")
+
+            # كتم العضو لمدة 10 دقائق إذا تكررت المخالفة
+                        if user_id in user_violations:
+                            user_violations[user_id] += 1
+                        else:
+                            user_violations[user_id] = 1
+
+                        logging.info(f"📊 [LOG] - عدد مخالفات المستخدم {user_id}: {user_violations[user_id]}")
+                        print(f"📊 [LOG] - عدد مخالفات المستخدم {user_id}: {user_violations[user_id]}")
+
+                        if user_violations[user_id] >= 3:  # بعد 3 مخالفات
+                            mute_duration = timedelta(minutes=10)
+                            mute_until = datetime.now() + mute_duration
+
+                            await context.bot.restrict_chat_member(
+                                chat_id=chat_id,
+                                user_id=user_id,
+                                until_date=mute_until,
+                                permissions=ChatPermissions(
+                                    can_send_messages=False,
+                                    can_send_media_messages=False,
+                                    can_send_polls=False,
+                                    can_send_other_messages=False,
+                                    can_add_web_page_previews=False
+                                )
+                            )
+                            
+
                         mute_notification = await context.bot.send_message(
                             chat_id=chat_id,
-                            text=f"تم كتم العضو لمدة 10 دقائق بسبب تكرار المخالفات."
+                            text=f"🔇 تم كتم العضو لمدة 10 دقائق بسبب تكرار المخالفات."
                         )
+
                         await asyncio.sleep(10)
                         await mute_notification.delete()
-                    else:
-                      user_violations[user_id] = 1
-            except Exception as e:
-                logging.error(f"خطأ في معالجة المخالفة: {e}")
-                
+                        logging.info("🗑️ [LOG] - تم حذف رسالة إشعار الكتم.")
+                        print("🗑️ [LOG] - تم حذف رسالة إشعار الكتم.")
+
+            
+                    except Exception as e:
+                        logging.error(f"❌ [LOG] - خطأ عام أثناء معالجة النية: {e}")
+                        print(f"❌ [LOG] - خطأ عام أثناء معالجة النية: {e}")
+                else:
+                    logging.info(f"❓ [LOG] - النية غير معروفة: {intent}")
+                    print(f"❓ [LOG] - النية غير معروفة: {intent}")
+
+                    
+
         # النية "5" أو أي قيمة أخرى يتم تجاهلها
 
     except Exception as e:
@@ -364,10 +408,10 @@ async def reset_database(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if str(update.effective_user.id) not in ADMIN_USER_ID:
         await update.message.reply_text("⛔ هذا الأمر متاح للمشرفين فقط!")
         return
-    
+
     confirmation_key = str(uuid.uuid4())[:8]
     context.user_data['db_confirmation'] = confirmation_key
-    
+
     await update.message.reply_text(
         f"⚠️ تحذير: هذا الأمر سيحذف جميع البيانات بشكل دائم!\n"
         f"للتأكيد، أرسل:\n"
@@ -377,24 +421,24 @@ async def reset_database(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def confirm_reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not await is_admin(update, context):
         return
-    
+
     try:
         args = context.args
         if not args or args[0] != context.user_data.get('db_confirmation'):
             await update.message.reply_text("❌ كود التأكيد غير صحيح!")
             return
-            
+
         # بدء عملية الحذف
         await update.message.reply_text("⌛ جاري حذف قاعدة البيانات...")
-        
+
         db_path = 'faq.db'
-        
+
 
         # الحذف الفعلي
         if os.path.exists(db_path):
             os.remove(db_path)
             initialize_database()  # إعادة الإنشاء
-            
+
 
             await update.message.reply_text(
                 "✅ تم إعادة تعيين قاعدة البيانات بنجاح!\n"
@@ -402,11 +446,11 @@ async def confirm_reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
         else:
             await update.message.reply_text("ℹ️ لم يتم العثور على ملف قاعدة البيانات!")
-            
+
     except Exception as e:
         logging.error(f"Database reset error: {e}")
         await update.message.reply_text("❌ فشل في إعادة تعيين قاعدة البيانات!")
-            
+
 # إنشاء البوت
 app = ApplicationBuilder().token(TOKEN).build()
 # إضافة المعالجات
