@@ -6,7 +6,13 @@ import uuid
 import time
 from datetime import datetime, timedelta
 from telegram import Update
-from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
+from telegram.ext import (
+    ApplicationBuilder,
+    MessageHandler,
+    CommandHandler,  # أضف هذا
+    filters,
+    ContextTypes
+)
 import google.generativeai as genai
 import pytz  # إضافة مكتبة pytz لضبط التوقيت
 
