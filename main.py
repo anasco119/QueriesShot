@@ -320,7 +320,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 faq_data = get_faq_data()
                 prompt = "أنت معلم لغة إنجليزية محترف. لديك قاعدة بيانات تحتوي على الأسئلة والأجوبة التالية:\n\n"
                 if intent in ["2", "3"]:
-                prompt = "أنت معلم لغة إنجليزية محترف. لديك قاعدة بيانات تحتوي على الأسئلة والأجوبة التالية:\n\n"
+                  prompt = "أنت معلم لغة إنجليزية محترف. لديك قاعدة بيانات تحتوي على الأسئلة والأجوبة التالية:\n\n"
 
                 for q, a in faq_data:
                   prompt += f"س: {q}\nج: {a}\n\n"
