@@ -28,7 +28,8 @@ TOKEN = os.getenv("FAQBOT_TOKEN")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 ALLOWED_GROUP_ID = int(os.getenv("ALLOWED_GROUP_ID"))  # معرف المجموعة المسموح بها
 ADMIN_USER_ID = int(os.getenv("ADMIN_USER_ID"))  # معرف المستخدم المشرف (أنت)
-WEBHOOK_URL = os.getenv("WEBHOOK_URL")  # عنوان URL الخاص بالويبهوك
+CHANNEL_ID = os.getenv("CHANNEL_ID")
+WEBHOOK_URL = os.getenv("WEBHOOK_URL") # عنوان URL الخاص بالويبهوك
 user_violations = {}  # لتتبع عدد مخالفات كل مستخدم
 # تهيئة Gemini API
 try:
@@ -88,6 +89,7 @@ async def store_channel_message(update: Update):
         if str(chat_id) == os.getenv("CHANNEL_ID"):
             cur.execute("INSERT INTO channel_messages (message_id, chat_id, text) VALUES (?, ?, ?)",
                         (message_id, chat_id, text))
+            
             conn.commit()
             logging.info(f"✅ تم تخزين رسالة من القناة: {text}")
         else:
