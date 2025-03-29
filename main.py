@@ -66,6 +66,15 @@ try:
 except Exception as e:
     logging.error(f"❌ خطأ في إنشاء الجداول: {e}")
 
+def get_recent_channel_messages():
+    """ استرجاع آخر 5 رسائل مخزنة من القناة """
+    try:
+        cur.execute("SELECT text FROM channel_messages ORDER BY id DESC LIMIT 5")
+        messages = cur.fetchall()
+        return [msg[0] for msg in messages]  # إرجاع الرسائل كنصوص
+    except Exception as e:
+        logging.error(f"❌ خطأ في جلب الرسائل المخزنة من القناة: {e}")
+        return []
 # دالة لإضافة استفسار جديد
 def add_faq(question, answer, category):
     try:
@@ -328,16 +337,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 faq_data = get_faq_data()
                 prompt = "أنت معلم لغة إنجليزية محترف. لديك قاعدة بيانات تحتوي على الأسئلة والأجوبة التالية:\n\n"
                 if intent in ["2", "3"]:
-                  prompt = "أنت معلم لغة إنجليزية محترف. لديك قاعدة بيانات تحتوي على الأسئلة والأجوبة التالية:\n\n"
-
-                for q, a in faq_data:
-                  prompt += f"س: {q}\nج: {a}\n\n"
-
-                prompt += f"استفسار المستخدم: {message}\n\n"
-
-                for q, a in faq_data:
-                    prompt += f"س: {q}\nج: {a}\n\n"
-
+                    recent_messages = get_recent_channel_messages()
+                      if recent_messages:
+                        prompt += "🔹 إليك بعض الرسائل الحديثة من القناة للاستفادة منها في الرد:\n"
+                    for msg in recent_messages:
+                    prompt += f"📌 {msg}\n"
 
                 if intent == "1":  # استفسار عام
                     prompt += "أجب على استفسار المستخدم استنادًا إلى قاعدة البيانات إذا كان مرتبطًا بها يجب ان يكون الرد بنفس لغة الاستفسار."
