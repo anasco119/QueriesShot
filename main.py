@@ -98,13 +98,14 @@ async def store_channel_message(update: Update):
         if str(chat_id) == os.getenv("CHANNEL_ID"):
             cur.execute("INSERT INTO channel_messages (message_id, chat_id, text) VALUES (?, ?, ?)",
                         (message_id, chat_id, text))
-            
-                cur.execute("SELECT COUNT(*) FROM channel_messages")
-                count = cur.fetchone()[0]
 
-            if count > 5:
+            cur.execute("SELECT COUNT(*) FROM channel_messages")
+            count = cur.fetchone()[0]
+
+        if count > 5:
             # حذف أقدم الرسائل للحفاظ على العدد عند 10 فقط
-                cur.execute("DELETE FROM channel_messages WHERE id IN (SELECT id FROM channel_messages ORDER BY id ASC LIMIT ?)", (count - 5,)
+            cur.execute("DELETE FROM channel_messages WHERE id IN (SELECT id FROM channel_messages ORDER BY id ASC LIMIT ?)", (count - 5,))
+  
             conn.commit()
             logging.info(f"✅ تم تخزين رسالة من القناة: {text}")
         else:
@@ -112,7 +113,6 @@ async def store_channel_message(update: Update):
 
     except Exception as e:
         logging.error(f"❌ خطأ في تخزين رسالة القناة: {e}")
-
 
 # دالة لحذف استفسار برقمه
 def delete_faq(faq_id):
@@ -127,22 +127,19 @@ def delete_faq(faq_id):
 
 # دالة للحصول على جميع الأسئلة والأجوبة
 def get_faq_data():
-    try:
-        cur.execute("SELECT question, answer FROM faq")
-        data = cur.fetchall()
-        logging.info(f"✅ تم استخراج {len(data)} سؤالًا من قاعدة البيانات.")
-        return data
-        cur.execute("SELECT text FROM channel_messages")
-        channel_entries = [(text, "معلومة من القناة") for (text,) in cur.fetchall()]
-        
-        return faq_entries + channel_entries  # 🔹 دمج البيانات المخزنة مع قاعدة الأسئلة
-    except Exception as e:
-        logging.error(f"❌ خطأ في جلب بيانات الأسئلة: {e}")
-        return []
+        try:
+            cur.execute("SELECT question, answer FROM faq")
+            faq_entries = cur.fetchall()  # تعديل التسمية من `data` إلى `faq_entries`
+            logging.info(f"✅ تم استخراج {len(faq_entries)} سؤالًا من قاعدة البيانات.")
 
-    except Exception as e:
-        logging.error(f"❌ خطأ في استخراج البيانات من قاعدة البيانات: {e}")
-        return []
+            cur.execute("SELECT text FROM channel_messages")
+            channel_entries = [(text, "معلومة من القناة") for (text,) in cur.fetchall()]
+
+            return faq_entries + channel_entries  # ✅ الآن `faq_entries` معرف
+        except Exception as e:
+            logging.error(f"❌ خطأ في جلب بيانات الأسئلة: {e}")
+            return []
+
 
 # دالة لإنشاء رد من Gemini
 def generate_gemini_response(prompt):
@@ -173,7 +170,7 @@ def reset_message_count():
 
 # ساعات عمل البوت (بتوقيت السودان)
 WORKING_HOURS_START = 6  # 8 صباحًا
-WORKING_HOURS_END = 19   # 7 مساءً
+WORKING_HOURS_END = 24   # 12 صباحًا
 
 # دالة للتحقق من ساعات العمل
 def is_within_working_hours():
@@ -320,7 +317,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 2. ذو علاقة بدراسة اللغة الانجليزية
                 3. خطأ إملائي وغرامر
                 4. مخالفة، سلوك غير لائق أو ترويج ومضايقة أو كلمات بذئية أو رسائل spam 
-                5. أخرى (غير ذات صلة) أي خارج سياق القناة و هي قناة تعلم الانجليزية 
+                5. أخرى (غير ذات صلة) أي خارج سياق القناة و هي قناة تعلم الانجليزية
+                
 
                 الرسالة: "{message}"
 
@@ -336,14 +334,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if intent in ["1", "2", "3", "4"]:  # استفسار أو دراسة أو تصحيح
                 faq_data = get_faq_data()
                 prompt = "أنت معلم لغة إنجليزية محترف. لديك قاعدة بيانات تحتوي على الأسئلة والأجوبة التالية:\n\n"
-                    for q, a in faq_data:
+                for q, a in faq_data:
                     prompt += f"س: {q}\nج: {a}\n\n"
-            
+
                 if intent in ["2", "3"]:
                     recent_messages = get_recent_channel_messages()
-                      if recent_messages:
+                if recent_messages:
                         prompt += "🔹 إليك بعض الرسائل الحديثة من القناة للاستفادة منها في الرد:\n"
-                    for msg in recent_messages:
+                for msg in recent_messages:
                     prompt += f"📌 {msg}\n"
 
                 if intent == "1":  # استفسار عام
@@ -362,9 +360,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 🎯 الهدف هو مساعدة المستخدم دون إزعاجه، لذا استخدم أسلوبًا لبقًا ومشجعًا في البداية.  
 ✍️ مثال على التنسيق المطلوب:  
 
-🔹 خطأ: [الجملة الأصلية]  
-✅ تصحيح: [الجملة المصححة]  
-💡 لماذا؟: [شرح قصير ومباشر]  
+🔹 خطأ*: [الجملة الأصلية]*  
+✅ تصحيح*: [الجملة المصححة]*
+💡 لماذا؟*: [شرح قصير ومباشر]*  
 
 📌 اجعل الأسلوب وديًا واحترافيًا، وكأنك مدرس لطيف يساعد الطلاب دون إشعارهم بالحرج و لا تستخدم نص عريض باي شكل من الاشكال و باللغة الانجليزية."""
 
@@ -381,7 +379,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     logging.info(f"قيمة intent: '{intent}'، نوعها: {type(intent)}")
 
                     try:
-                        
+
                         logging.info("🗑️ [LOG] - تم حذف الرسالة المخالفة بنجاح.")
                         print("🗑️ [LOG] - تم حذف الرسالة المخالفة بنجاح.")
 
@@ -429,7 +427,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                                     can_add_web_page_previews=False
                                 )
                             )
-                            
+
 
                         mute_notification = await context.bot.send_message(
                             chat_id=chat_id,
@@ -441,7 +439,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         logging.info("🗑️ [LOG] - تم حذف رسالة إشعار الكتم.")
                         print("🗑️ [LOG] - تم حذف رسالة إشعار الكتم.")
 
-            
+
                     except Exception as e:
                         logging.error(f"❌ [LOG] - خطأ عام أثناء معالجة النية: {e}")
                         print(f"❌ [LOG] - خطأ عام أثناء معالجة النية: {e}")
@@ -449,7 +447,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     logging.info(f"❓ [LOG] - النية غير معروفة: {intent}")
                     print(f"❓ [LOG] - النية غير معروفة: {intent}")
 
-                    
+
 
         # النية "5" أو أي قيمة أخرى يتم تجاهلها
 
@@ -458,53 +456,67 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("عذرًا، حدث خطأ أثناء معالجة سؤالك. يرجى المحاولة لاحقًا.")
 
 
+
+async def send_message(update: Update, text: str):
+    """ دالة موحدة لإرسال الرسائل مع التحقق من وجود `message`. """
+    if update.message:
+        await update.message.reply_text(text)
+
+async def is_admin(update: Update, context: ContextTypes.DEFAULT_TYPE) -> bool:
+    """ التحقق مما إذا كان المستخدم مشرفًا. """
+    return str(update.effective_user.id) in ADMIN_USER_ID
+
 async def reset_database(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # التحقق من الصلاحيات
-    if str(update.effective_user.id) not in ADMIN_USER_ID:
-        await update.message.reply_text("⛔ هذا الأمر متاح للمشرفين فقط!")
+    """ دالة لإعادة تهيئة قاعدة البيانات بعد التأكيد. """
+    if not await is_admin(update, context):
+        await send_message(update, "⛔ هذا الأمر متاح للمشرفين فقط!")
         return
 
     confirmation_key = str(uuid.uuid4())[:8]
     context.user_data['db_confirmation'] = confirmation_key
 
-    await update.message.reply_text(
+    await send_message(
+        update,
         f"⚠️ تحذير: هذا الأمر سيحذف جميع البيانات بشكل دائم!\n"
         f"للتأكيد، أرسل:\n"
         f"/confirm_reset {confirmation_key}"
     )
 
 async def confirm_reset(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """ دالة تأكيد إعادة التعيين بعد التأكد من كود الحماية. """
     if not await is_admin(update, context):
         return
 
     try:
-        args = context.args
-        if not args or args[0] != context.user_data.get('db_confirmation'):
-            await update.message.reply_text("❌ كود التأكيد غير صحيح!")
+        if not context.args:
+            await send_message(update, "❌ يجب إدخال كود التأكيد!")
             return
 
-        # بدء عملية الحذف
-        await update.message.reply_text("⌛ جاري حذف قاعدة البيانات...")
+        confirmation_code = context.args[0]
+        stored_code = context.user_data.get('db_confirmation')
 
+        if not stored_code or confirmation_code != stored_code:
+            await send_message(update, "❌ كود التأكيد غير صحيح!")
+            return
+
+        await send_message(update, "⌛ جاري حذف قاعدة البيانات...")
         db_path = 'faq.db'
 
-
-        # الحذف الفعلي
+        # حذف قاعدة البيانات إذا كانت موجودة
         if os.path.exists(db_path):
             os.remove(db_path)
-            initialize_database()  # إعادة الإنشاء
+            await asyncio.sleep(2)  # منح وقت للحذف
 
+            # إعادة التهيئة
+            initialize_database()  
 
-            await update.message.reply_text(
-                "✅ تم إعادة تعيين قاعدة البيانات بنجاح!\n"
-                f"تم إنشاء نسخة احتياطية في: {temp_path}"
-            )
+            await send_message(update, "✅ تم إعادة تعيين قاعدة البيانات بنجاح!")
         else:
-            await update.message.reply_text("ℹ️ لم يتم العثور على ملف قاعدة البيانات!")
+            await send_message(update, "ℹ️ لم يتم العثور على ملف قاعدة البيانات!")
 
     except Exception as e:
         logging.error(f"Database reset error: {e}")
-        await update.message.reply_text("❌ فشل في إعادة تعيين قاعدة البيانات!")
+        await send_message(update, "❌ فشل في إعادة تعيين قاعدة البيانات!")
 
 # إنشاء البوت
 app = ApplicationBuilder().token(TOKEN).build()
