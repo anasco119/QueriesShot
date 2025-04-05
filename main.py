@@ -252,9 +252,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 # التحقق من ساعات العمل
                 if not is_within_working_hours():
                     await update.message.reply_text(
-                        "عذرًا، البوت يعمل فقط من الساعة 8 صباحًا حتى 7 مساءً بتوقيت السودان.\n"
-                        "Sorry, the bot operates only from 8 AM to 7 PM Sudan time."
-                    )
+                        "*عذرًا، البوت يعمل فقط من الساعة 8 صباحًا حتى 7 مساءً بتوقيت السودان*.\n"
+                        "*Sorry, the bot operates only from 8 AM to 7 PM Sudan time.*", parse_mode='MarkdownV2', disable_web_page_preview=True)
                     return  # تجاهل الرسالة خارج ساعات العمل
 
                 reset_message_count()
@@ -371,7 +370,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     "لتجنب الإزعاج، لا تُضمّن جملة تحفيزية أو طلب تقييم إلا إذا كان ذلك مناسبًا في سياق الرد.")
 
                     response = generate_gemini_response(prompt)
-                    await update.message.reply_text(response)
+                    await update.message.reply_text(response, parse_mode='MarkdownV2',
+    disable_web_page_preview=True)
                 elif intent.strip() == "4":  # يحذف كل الفراغات والأحرف الخفية
             # مخالفة أو سلوك غير لائق
                     logging.info("🚨 [LOG] - دخلنا في جزء المخالفات.")
