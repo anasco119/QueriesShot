@@ -17,6 +17,7 @@ from telegram.ext import (
 )
 import google.generativeai as genai
 import pytz  # إضافة مكتبة pytz لضبط التوقيت
+from http.server import BaseHTTPRequestHandler, HTTPServer
 
 # تهيئة التسجيل (logging)
 logging.basicConfig(level=logging.INFO)
@@ -38,6 +39,20 @@ try:
     logging.info("✅ تم تهيئة Gemini API بنجاح!")
 except Exception as e:
     logging.error(f"❌ خطأ في تهيئة Gemini API: {e}")
+
+class WebhookHandler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        if self.path == f'/{TOKEN}':
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            update = telebot.types.Update.de_json(post_data.decode('utf-8'))
+            bot.process_new_updates([update])
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(b'OK')
+        else:
+            self.send_response(404)
+            self.end_headers()
 
 # إنشاء اتصال بقاعدة البيانات
 try:
@@ -536,5 +551,14 @@ def main():
         webhook_url=f"{WEBHOOK_URL}/{TOKEN}"  # تعيين عنوان الويب هوك
     )
 
+def run_server():
+    server = HTTPServer(('0.0.0.0', PORT), WebhookHandler)
+    logging.info(f"الخادم يعمل على المنفذ {PORT}")
+    server.serve_forever()
+
 if __name__ == "__main__":
-    main()
+    try:
+        set_webhook()
+        run_server()
+    except Exception as e:
+        logging.error(f"خطأ في التشغيل: {e}")
