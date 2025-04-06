@@ -39,8 +39,7 @@ try:
     logging.info("✅ تم تهيئة Gemini API بنجاح!")
 except Exception as e:
     logging.error(f"❌ خطأ في تهيئة Gemini API: {e}")
-
-bot = telebot.TeleBot(TOKEN)
+    
 app = Flask(__name__)
 
 # نقطة نهاية أساسية للتحقق من عمل الخادم
@@ -561,7 +560,7 @@ def webhook():
 # تعيين Webhook للبوت
 def set_webhook():
     url = f"{WEBHOOK_URL}/{TOKEN}"
-    bot.set_webhook(url=url)
+    asyncio.set_webhook(url=url)
 
 if __name__ == '__main__':
     set_webhook()
