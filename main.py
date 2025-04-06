@@ -263,7 +263,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 if not is_within_working_hours():
                     await update.message.reply_text(
                         "*عذرًا، البوت يعمل فقط من الساعة 8 صباحًا حتى 7 مساءً بتوقيت السودان*.\n"
-                        "*Sorry, the bot operates only from 8 AM to 7 PM Sudan time.*", parse_mode='MarkdownV2', disable_web_page_preview=True)
+                        "*Sorry, the bot operates only from 8 AM to 7 PM Sudan time.*", parse_mode='Markdown', disable_web_page_preview=True)
                     return  # تجاهل الرسالة خارج ساعات العمل
 
                 reset_message_count()
@@ -346,7 +346,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 for q, a in faq_data:
                     prompt += f"س: {q}\nج: {a}\n\n"
 
-                if intent in ["2", "3"]:
+                if intent in ["1", 2"]:
                     recent_messages = get_recent_channel_messages()
                 if recent_messages:
                         prompt += "🔹 إليك بعض الرسائل الحديثة من القناة للاستفادة منها في الرد:\n"
@@ -380,7 +380,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     "لتجنب الإزعاج، لا تُضمّن جملة تحفيزية أو طلب تقييم إلا إذا كان ذلك مناسبًا في سياق الرد.")
 
                     response = generate_gemini_response(prompt)
-                    await update.message.reply_text(response, parse_mode='Markdown', disable_web_page_preview=True)
+                    await update.message.reply_text(response, parse_mode='Markdown')
                 elif intent.strip() == "4":  # يحذف كل الفراغات والأحرف الخفية
             # مخالفة أو سلوك غير لائق
                     logging.info("🚨 [LOG] - دخلنا في جزء المخالفات.")
