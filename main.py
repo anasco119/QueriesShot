@@ -345,7 +345,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 prompt = "أنت معلم لغة إنجليزية محترف. لديك قاعدة بيانات تحتوي على الأسئلة والأجوبة التالية:\n\n"
                 for q, a in faq_data:
                     prompt += f"س: {q}\nج: {a}\n\n"
-
+                recent_messages = []
                 if intent in ["1", "2"]:
                     recent_messages = get_recent_channel_messages()
                 if recent_messages:
