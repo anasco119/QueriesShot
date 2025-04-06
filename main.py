@@ -1,4 +1,4 @@
-import os
+noimport os
 import sqlite3
 import shutil
 import logging
@@ -549,10 +549,14 @@ def main():
 # نقطة نهاية (Webhook) للبوت
 @app.route('/' + TOKEN, methods=['POST'])
 def webhook():
-    json_str = request.get_data().decode('UTF-8')
-    update = telebot.types.Update.de_json(json_str)
-    bot.process_new_updates([update])
-    return "OK", 200
+    try:
+        json_str = request.get_data().decode('UTF-8')
+        update = telebot.types.Update.de_json(json_str)
+        bot.process_new_updates([update])
+        return "OK", 200
+    except Exception as e:
+        logging.error(f"Error in webhook: {e}")
+        return "Error", 500
     
 # تعيين Webhook للبوت
 def set_webhook():
