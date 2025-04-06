@@ -546,11 +546,5 @@ def main():
         webhook_url=f"{WEBHOOK_URL}/{TOKEN}"  # تعيين عنوان الويب هوك
         )
     
-# تعيين Webhook للبوت
-def set_webhook():
-    url = f"{WEBHOOK_URL}/{TOKEN}"
-    app.set_webhook(url=url)
-
 if __name__ == '__main__':
-    set_webhook()
-    app.run(debug=True, host="0.0.0.0", port=10000)
+    main()
