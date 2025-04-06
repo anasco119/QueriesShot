@@ -546,14 +546,6 @@ def main():
         webhook_url=f"{WEBHOOK_URL}/{TOKEN}"  # تعيين عنوان الويب هوك
     )
 
-# نقطة نهاية الويب هوك
-@app.route('/' + os.getenv('TELEGRAM_BOT_TOKEN'), methods=['POST'])
-def webhook():
-    if request.method == "POST":
-        update = telebot.types.Update.de_json(request.stream.read().decode('utf-8'))
-        bot.process_new_updates([update])
-        return 'ok', 200
-    return 'Method Not Allowed', 405
     
 if __name__ == "__main__":
     set_webhook()
