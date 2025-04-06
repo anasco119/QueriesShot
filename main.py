@@ -380,8 +380,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                     "لتجنب الإزعاج، لا تُضمّن جملة تحفيزية أو طلب تقييم إلا إذا كان ذلك مناسبًا في سياق الرد.")
 
                     response = generate_gemini_response(prompt)
-                    await update.message.reply_text(response, parse_mode='MarkdownV2',
-    disable_web_page_preview=True)
+                    await update.message.reply_text(response, parse_mode='Markdown', disable_web_page_preview=True)
                 elif intent.strip() == "4":  # يحذف كل الفراغات والأحرف الخفية
             # مخالفة أو سلوك غير لائق
                     logging.info("🚨 [LOG] - دخلنا في جزء المخالفات.")
