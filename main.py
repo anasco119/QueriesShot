@@ -340,6 +340,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
         # معالجة حسب النية
+            prompt = ""
             if intent == "1":  # استفسار عام
                 faq_data = get_faq_data()
                 prompt = "أنت معلم لغة إنجليزية محترف. لديك قاعدة بيانات تحتوي على الأسئلة والأجوبة التالية:\n\n"
