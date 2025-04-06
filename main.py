@@ -560,7 +560,7 @@ def webhook():
     
 # تعيين Webhook للبوت
 def set_webhook():
-   url = f"{WEBHOOK_URL}/{TOKEN}"  # استخدام متغير البيئة
+    url = f"{WEBHOOK_URL}/{TOKEN}"
     bot.set_webhook(url=url)
 
 if __name__ == '__main__':
