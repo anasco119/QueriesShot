@@ -40,7 +40,6 @@ try:
 except Exception as e:
     logging.error(f"❌ خطأ في تهيئة Gemini API: {e}")
     
-bot = telebot.TeleBot(os.getenv('TELEGRAM_BOT_TOKEN'))
 app = Flask(__name__)
 
 # نقطة نهاية أساسية للتحقق من عمل الخادم
