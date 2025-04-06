@@ -1,4 +1,4 @@
-noimport os
+import os
 import sqlite3
 import shutil
 import logging
@@ -561,7 +561,7 @@ def webhook():
 # تعيين Webhook للبوت
 def set_webhook():
     url = f"{WEBHOOK_URL}/{TOKEN}"
-    bot.set_webhook(url=url)
+    bot.set_webhook(url=url)
 
 if __name__ == '__main__':
     set_webhook()  # تعيين الـ Webhook عند تشغيل التطبيق
