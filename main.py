@@ -538,7 +538,7 @@ app.add_handler(CommandHandler("confirm_reset", confirm_reset))
 # دالة رئيسية لتشغيل البوت
 def main():
     logging.info("✅ البوت يعمل الآن...")
-    PORT = int(os.environ.get("PORT", 8080))  # الحصول على المنفذ من البيئة أو استخدام 8080 افتراضيًا
+    PORT = int(os.environ.get("PORT", 10000))  # الحصول على المنفذ من البيئة أو استخدام 8080 افتراضيًا
     app.run_webhook(
         listen="0.0.0.0",
         port=PORT,
@@ -548,6 +548,5 @@ def main():
 
     
 if __name__ == "__main__":
-   
-    port = int(os.environ.get('PORT', 10000))  # Render يستخدم 10000
-    app.run(host='0.0.0.0', port=port)
+    main()
+ 
