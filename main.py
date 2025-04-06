@@ -17,7 +17,7 @@ from telegram.ext import (
 )
 import google.generativeai as genai
 import pytz  # إضافة مكتبة pytz لضبط التوقيت
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from flask import Flask, request, jsonify
 
 # تهيئة التسجيل (logging)
 logging.basicConfig(level=logging.INFO)
@@ -40,19 +40,14 @@ try:
 except Exception as e:
     logging.error(f"❌ خطأ في تهيئة Gemini API: {e}")
 
-class WebhookHandler(BaseHTTPRequestHandler):
-    def do_POST(self):
-        if self.path == f'/{TOKEN}':
-            content_length = int(self.headers['Content-Length'])
-            post_data = self.rfile.read(content_length)
-            update = telebot.types.Update.de_json(post_data.decode('utf-8'))
-            bot.process_new_updates([update])
-            self.send_response(200)
-            self.end_headers()
-            self.wfile.write(b'OK')
-        else:
-            self.send_response(404)
-            self.end_headers()
+app = Flask(__name__)
+
+# نقطة نهاية أساسية للتحقق من عمل الخادم
+@app.route('/')
+def home():
+    return "✅ البوت يعمل بشكل صحيح!", 200
+    
+
 
 # إنشاء اتصال بقاعدة البيانات
 try:
@@ -551,14 +546,16 @@ def main():
         webhook_url=f"{WEBHOOK_URL}/{TOKEN}"  # تعيين عنوان الويب هوك
     )
 
-def run_server():
-    server = HTTPServer(('0.0.0.0', PORT), WebhookHandler)
-    logging.info(f"الخادم يعمل على المنفذ {PORT}")
-    server.serve_forever()
-
+# نقطة نهاية الويب هوك
+@app.route('/' + os.getenv('TELEGRAM_BOT_TOKEN'), methods=['POST'])
+def webhook():
+    if request.method == "POST":
+        update = telebot.types.Update.de_json(request.stream.read().decode('utf-8'))
+        bot.process_new_updates([update])
+        return 'ok', 200
+    return 'Method Not Allowed', 405
+    
 if __name__ == "__main__":
-    try:
-        set_webhook()
-        run_server()
-    except Exception as e:
-        logging.error(f"خطأ في التشغيل: {e}")
+    set_webhook()
+    port = int(os.environ.get('PORT', 10000))  # Render يستخدم 10000
+    app.run(host='0.0.0.0', port=port)
