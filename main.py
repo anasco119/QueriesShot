@@ -255,7 +255,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 )
 
                     response = generate_gemini_response(prompt)
-                    await update.message.reply_text(response)
+                    await update.message.reply_text(response, parse_mode='Markdown')
 
             # إذا كان المستخدم عاديًا في الخاص
             else:
@@ -302,7 +302,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "إذا سُئلت عن اسمك، أجب باختصار بأنك QueriesShot، بوت متخصص في الإجابة عن الأسئلة الشائعة في تعلم اللغة الإنجليزية.")
 
                 response = generate_gemini_response(prompt)
-                await update.message.reply_text(response)
+                await update.message.reply_text(response, parse_mode='Markdown')
 
         # إذا كانت الرسالة في المجموعة
         elif chat_id == ALLOWED_GROUP_ID:
@@ -340,7 +340,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
         # معالجة حسب النية
-            if intent in ["1", "2", "3", "4"]:  # استفسار أو دراسة أو تصحيح
+            if intent in ["1", "2", "4"]:  # استفسار أو دراسة أو تصحيح
                 faq_data = get_faq_data()
                 prompt = "أنت معلم لغة إنجليزية محترف. لديك قاعدة بيانات تحتوي على الأسئلة والأجوبة التالية:\n\n"
                 for q, a in faq_data:
@@ -352,15 +352,17 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         prompt += "🔹 إليك بعض الرسائل الحديثة من القناة للاستفادة منها في الرد:\n"
                 for msg in recent_messages:
                     prompt += f"📌 {msg}\n"
+                if intent in ["3"]:
+                    prompt = "الرسالة تحتوي على أخطاء إملائية أو نحوية."
 
                 if intent == "1":  # استفسار عام
                     prompt += "أجب على استفسار المستخدم استنادًا إلى قاعدة البيانات إذا كان مرتبطًا بها يجب ان يكون الرد بنفس لغة الاستفسار."
                     response = generate_gemini_response(prompt)
-                    await update.message.reply_text(response)
+                    await update.message.reply_text(response, parse_mode='Markdown')
                 elif intent == "2":  # دراسة باللغة الإنجليزية
                     prompt += " الرسالة متعلقة بدراسة اللغة الإنجليزية. قدم إجابة مفصلة ومنظمة و قصيرة و يجب ان يكون الرد بنفس لغة الاستفسار."
                     response = generate_gemini_response(prompt)
-                    await update.message.reply_text(response)
+                    await update.message.reply_text(response, parse_mode='Markdown')
                 elif intent == "3":  # تصحيح أخطاء
                     prompt += """الرسالة تحتوي على أخطاء إملائية أو نحوية.  
 ✅ قم بتصحيح الأخطاء أولاً، ثم قدّم شرحًا تعليمياً بسيطًا في رسالة قصيرة.  
