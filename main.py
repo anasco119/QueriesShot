@@ -564,5 +564,5 @@ def set_webhook():
     bot.set_webhook(url=url)
 
 if __name__ == '__main__':
-    set_webhook()  # تعيين الـ Webhook عند تشغيل التطبيق
+    set_webhook()
     app.run(debug=True, host="0.0.0.0", port=10000)
