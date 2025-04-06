@@ -565,4 +565,4 @@ def set_webhook():
 
 if __name__ == '__main__':
     set_webhook()
-    app.run(debug=True, host="0.0.0.0", port=10000)
+    app.run(debug=True, host="0.0.0.0", port=10000)
