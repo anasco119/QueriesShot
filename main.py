@@ -357,7 +357,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 prompt = "أنت معلم لغة إنجليزية محترف. لديك قاعدة بيانات تحتوي على الأسئلة والأجوبة التالية:\n\n"
                 for q, a in faq_data:
                     prompt += f"س: {q}\nج: {a}\n\n"
-                prompt += "أجب على استفسار المستخدم استنادًا إلى قاعدة البيانات إذا كان مرتبطًا بها. يجب أن يكون الرد بنفس لغة الاستفسار. الرسالة الأصلية = "{message}". "
+                prompt += "أجب على استفسار المستخدم استنادًا إلى قاعدة البيانات إذا كان مرتبطًا بها. يجب أن يكون الرد بنفس لغة الاستفسار. الرسالة الأصلية = "{message}"."
                 response = generate_gemini_response(prompt)
                 await update.message.reply_text(response, parse_mode='Markdown')
             elif intent == "2":  # دراسة باللغة الإنجليزية
