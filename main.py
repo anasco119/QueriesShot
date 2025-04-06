@@ -549,7 +549,7 @@ def main():
 # تعيين Webhook للبوت
 def set_webhook():
     url = f"{WEBHOOK_URL}/{TOKEN}"
-    asyncio.set_webhook(url=url)
+    app.set_webhook(url=url)
 
 if __name__ == '__main__':
     set_webhook()
