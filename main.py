@@ -39,7 +39,8 @@ try:
     logging.info("✅ تم تهيئة Gemini API بنجاح!")
 except Exception as e:
     logging.error(f"❌ خطأ في تهيئة Gemini API: {e}")
-
+    
+bot = telebot.TeleBot(os.getenv('TELEGRAM_BOT_TOKEN'))
 app = Flask(__name__)
 
 # نقطة نهاية أساسية للتحقق من عمل الخادم
@@ -548,6 +549,6 @@ def main():
 
     
 if __name__ == "__main__":
-    set_webhook()
+   
     port = int(os.environ.get('PORT', 10000))  # Render يستخدم 10000
     app.run(host='0.0.0.0', port=port)
