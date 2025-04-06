@@ -350,7 +350,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             elif intent == "2":  # دراسة باللغة الإنجليزية
                 recent_messages = get_recent_channel_messages()
                 if recent_messages:
-                prompt += "🔹 إليك بعض الدروس الحديثة من القناة:\n"
+                    prompt += "🔹 إليك بعض الدروس الحديثة من القناة:\n"
                 for msg in recent_messages:
                     prompt += f"📌 {msg}\n"
                 prompt += "قدم إجابة مفصلة ومنظمة وقصيرة. يجب أن يكون الرد بنفس لغة الاستفسار."
@@ -378,80 +378,80 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
                     response = generate_gemini_response(prompt)
                     await update.message.reply_text(response, parse_mode='Markdown')
-                elif intent.strip() == "4":  # يحذف كل الفراغات والأحرف الخفية
+            elif intent.strip() == "4":  # يحذف كل الفراغات والأحرف الخفية
             # مخالفة أو سلوك غير لائق
-                    logging.info("🚨 [LOG] - دخلنا في جزء المخالفات.")
-                    print(f"قيمة intent: '{intent}'، نوعها: {type(intent)}، طولها: {len(intent)}")
-                    logging.info(f"قيمة intent: '{intent}'، نوعها: {type(intent)}")
+                logging.info("🚨 [LOG] - دخلنا في جزء المخالفات.")
+                print(f"قيمة intent: '{intent}'، نوعها: {type(intent)}، طولها: {len(intent)}")
+                logging.info(f"قيمة intent: '{intent}'، نوعها: {type(intent)}")
 
-                    try:
+                try:
 
-                        logging.info("🗑️ [LOG] - تم حذف الرسالة المخالفة بنجاح.")
-                        print("🗑️ [LOG] - تم حذف الرسالة المخالفة بنجاح.")
+                    logging.info("🗑️ [LOG] - تم حذف الرسالة المخالفة بنجاح.")
+                    print("🗑️ [LOG] - تم حذف الرسالة المخالفة بنجاح.")
 
-                        warning_msg = ("⚠️ تم حذف الرسالة بسبب مخالفتها لقواعد المجموعة. "
+                    warning_msg = ("⚠️ تم حذف الرسالة بسبب مخالفتها لقواعد المجموعة. "
                            "نرحب بالأسئلة والمناقشات المتعلقة بتعلم اللغة الإنجليزية، "
                            "ولكن نرفض السلوك غير اللائق أو المضايقة. يرجى مراجعة قواعد المجموعة.")
 
-                        sent_warning = await context.bot.send_message(
-                            chat_id=chat_id,
-                            text=warning_msg,
-                            reply_to_message_id=update.message.message_id
+                    sent_warning = await context.bot.send_message(
+                        chat_id=chat_id,
+                        text=warning_msg,
+                        reply_to_message_id=update.message.message_id
                         )
-                        await update.message.delete()
-                        logging.info("⚠️ [LOG] - تم إرسال رسالة تحذيرية للمستخدم.")
-                        print("⚠️ [LOG] - تم إرسال رسالة تحذيرية للمستخدم.")
+                    await update.message.delete()
+                    logging.info("⚠️ [LOG] - تم إرسال رسالة تحذيرية للمستخدم.")
+                    print("⚠️ [LOG] - تم إرسال رسالة تحذيرية للمستخدم.")
 
             # حذف رسالة التحذير بعد 10 ثوانٍ
-                        await asyncio.sleep(10)
-                        await sent_warning.delete()
-                        logging.info("🗑️ [LOG] - تم حذف رسالة التحذير بعد 10 ثوانٍ.")
-                        print("🗑️ [LOG] - تم حذف رسالة التحذير بعد 10 ثوانٍ.")
+                    await asyncio.sleep(10)
+                    await sent_warning.delete()
+                    logging.info("🗑️ [LOG] - تم حذف رسالة التحذير بعد 10 ثوانٍ.")
+                    print("🗑️ [LOG] - تم حذف رسالة التحذير بعد 10 ثوانٍ.")
 
             # كتم العضو لمدة 10 دقائق إذا تكررت المخالفة
-                        if user_id in user_violations:
-                            user_violations[user_id] += 1
-                        else:
-                            user_violations[user_id] = 1
+                    if user_id in user_violations:
+                        user_violations[user_id] += 1
+                    else:
+                        user_violations[user_id] = 1
 
-                        logging.info(f"📊 [LOG] - عدد مخالفات المستخدم {user_id}: {user_violations[user_id]}")
-                        print(f"📊 [LOG] - عدد مخالفات المستخدم {user_id}: {user_violations[user_id]}")
+                    logging.info(f"📊 [LOG] - عدد مخالفات المستخدم {user_id}: {user_violations[user_id]}")
+                    print(f"📊 [LOG] - عدد مخالفات المستخدم {user_id}: {user_violations[user_id]}")
 
-                        if user_violations[user_id] >= 3:  # بعد 3 مخالفات
-                            mute_duration = timedelta(minutes=10)
-                            mute_until = datetime.now() + mute_duration
+                    if user_violations[user_id] >= 3:  # بعد 3 مخالفات
+                        mute_duration = timedelta(minutes=10)
+                        mute_until = datetime.now() + mute_duration
 
-                            await context.bot.restrict_chat_member(
-                                chat_id=chat_id,
-                                user_id=user_id,
-                                until_date=mute_until,
-                                permissions=ChatPermissions(
-                                    can_send_messages=False,
-                                    can_send_media_messages=False,
-                                    can_send_polls=False,
-                                    can_send_other_messages=False,
-                                    can_add_web_page_previews=False
+                        await context.bot.restrict_chat_member(
+                            chat_id=chat_id,
+                            user_id=user_id,
+                            until_date=mute_until,
+                            permissions=ChatPermissions(
+                                can_send_messages=False,
+                                can_send_media_messages=False,
+                                can_send_polls=False,
+                                can_send_other_messages=False,
+                                can_add_web_page_previews=False
                                 )
                             )
 
 
-                        mute_notification = await context.bot.send_message(
-                            chat_id=chat_id,
-                            text=f"🔇 تم كتم العضو لمدة 10 دقائق بسبب تكرار المخالفات."
+                    mute_notification = await context.bot.send_message(
+                        chat_id=chat_id,
+                        text=f"🔇 تم كتم العضو لمدة 10 دقائق بسبب تكرار المخالفات."
                         )
 
-                        await asyncio.sleep(10)
-                        await mute_notification.delete()
-                        logging.info("🗑️ [LOG] - تم حذف رسالة إشعار الكتم.")
-                        print("🗑️ [LOG] - تم حذف رسالة إشعار الكتم.")
+                    await asyncio.sleep(10)
+                    await mute_notification.delete()
+                    logging.info("🗑️ [LOG] - تم حذف رسالة إشعار الكتم.")
+                    print("🗑️ [LOG] - تم حذف رسالة إشعار الكتم.")
 
 
-                    except Exception as e:
-                        logging.error(f"❌ [LOG] - خطأ عام أثناء معالجة النية: {e}")
-                        print(f"❌ [LOG] - خطأ عام أثناء معالجة النية: {e}")
-                else:
-                    logging.info(f"❓ [LOG] - النية غير معروفة: {intent}")
-                    print(f"❓ [LOG] - النية غير معروفة: {intent}")
+                except Exception as e:
+                    logging.error(f"❌ [LOG] - خطأ عام أثناء معالجة النية: {e}")
+                    print(f"❌ [LOG] - خطأ عام أثناء معالجة النية: {e}")
+            else:
+                logging.info(f"❓ [LOG] - النية غير معروفة: {intent}")
+                print(f"❓ [LOG] - النية غير معروفة: {intent}")
 
 
 
