@@ -392,8 +392,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 اجعل الرد جذابًا بصريًا باستخدام الإيموجي عند الحاجة، دون مبالغة. 
 لتجنب الإزعاج، لا تُضمّن جملة تحفيزية أو طلب تقييم إلا إذا كان ذلك مناسبًا في سياق الرد."""
 
-                    response = generate_gemini_response(prompt)
-                    await update.message.reply_text(response, parse_mode='Markdown')
+                response = generate_gemini_response(prompt)
+                await update.message.reply_text(response, parse_mode='Markdown')
             elif intent.strip() == "4":  # يحذف كل الفراغات والأحرف الخفية
             # مخالفة أو سلوك غير لائق
                 logging.info("🚨 [LOG] - دخلنا في جزء المخالفات.")
