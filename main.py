@@ -216,6 +216,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if chat_id == user_id:
             # إذا كان المستخدم هو المشرف (أنت)
             if user_id == ADMIN_USER_ID:
+                if user_id == CHANNEL_ID:
+                    return  # تجاهل الرسائل المرسلة من القناة
+    
+                
                 # معالجة أمر الإضافة
                 if message.startswith("/addfaq"):
                     try:
