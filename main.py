@@ -595,7 +595,7 @@ app.add_handler(CommandHandler("confirm_reset", confirm_reset))
 # دالة رئيسية لتشغيل البوت
 
 PORT = int(os.environ.get("PORT", 10000))  # اجعل PORT متاحًا عالميًا
-
+BOT_PORT = 10001
 def run_flask():
     app_flask.run(host="0.0.0.0", port=PORT)
 
@@ -608,7 +608,7 @@ def main():
     # تشغيل بوت التليغرام مع الويبهوك
     app.run_webhook(
         listen="0.0.0.0",
-        port=PORT,
+        port=BOT_PORT,
         url_path=TOKEN,
         webhook_url=f"{WEBHOOK_URL}/{TOKEN}"
     )
