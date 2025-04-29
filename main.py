@@ -40,7 +40,7 @@ try:
 except Exception as e:
     logging.error(f"❌ خطأ في تهيئة Gemini API: {e}")
     
-app = Flask(__name__)
+app_flask = Flask(__name__)
 
 # نقطة نهاية أساسية للتحقق من عمل الخادم
 @app.route('/')
