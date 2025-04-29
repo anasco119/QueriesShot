@@ -593,22 +593,25 @@ app.add_handler(CommandHandler("reset_db", reset_database))
 app.add_handler(CommandHandler("confirm_reset", confirm_reset))
 
 # دالة رئيسية لتشغيل البوت
+
+PORT = int(os.environ.get("PORT", 10000))  # اجعل PORT متاحًا عالميًا
+
+def run_flask():
+    app_flask.run(host="0.0.0.0", port=PORT)
+
 def main():
     logging.info("✅ البوت يعمل الآن...")
-    PORT = int(os.environ.get("PORT", 10000))  # الحصول على المنفذ من البيئة أو استخدام 8080 افتراضيًا
+
+    # تشغيل Flask في خيط منفصل
+    threading.Thread(target=run_flask).start()
+
+    # تشغيل بوت التليغرام مع الويبهوك
     app.run_webhook(
         listen="0.0.0.0",
         port=PORT,
         url_path=TOKEN,
-        webhook_url=f"{WEBHOOK_URL}/{TOKEN}"  # تعيين عنوان الويب هوك
-        )
-
-def run_flask():
-    flask_app.run(host="0.0.0.0", port=PORT)
-
-def main():
-    # تشغيل خادم Flask في خلفية
-    threading.Thread(target=run_flask).start()
+        webhook_url=f"{WEBHOOK_URL}/{TOKEN}"
+    )
 
 if __name__ == '__main__':
     main()
