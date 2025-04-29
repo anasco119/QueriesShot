@@ -43,7 +43,7 @@ except Exception as e:
 app_flask = Flask(__name__)
 
 # نقطة نهاية أساسية للتحقق من عمل الخادم
-@app.route('/')
+@app_flask.route('/')
 def home():
     return "✅ البوت يعمل بشكل صحيح!", 200
     
