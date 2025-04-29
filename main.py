@@ -18,6 +18,8 @@ from telegram.ext import (
 import google.generativeai as genai
 import pytz  # إضافة مكتبة pytz لضبط التوقيت
 from flask import Flask, request, jsonify
+import threading
+
 
 # تهيئة التسجيل (logging)
 logging.basicConfig(level=logging.INFO)
@@ -600,6 +602,13 @@ def main():
         url_path=TOKEN,
         webhook_url=f"{WEBHOOK_URL}/{TOKEN}"  # تعيين عنوان الويب هوك
         )
-    
+
+def run_flask():
+    flask_app.run(host="0.0.0.0", port=PORT)
+
+def main():
+    # تشغيل خادم Flask في خلفية
+    threading.Thread(target=run_flask).start()
+
 if __name__ == '__main__':
     main()
