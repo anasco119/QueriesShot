@@ -595,23 +595,14 @@ app.add_handler(CommandHandler("confirm_reset", confirm_reset))
 # دالة رئيسية لتشغيل البوت
 
 PORT = int(os.environ.get("PORT", 10000))  # اجعل PORT متاحًا عالميًا
-BOT_PORT = 10001
+
 def run_flask():
     app_flask.run(host="0.0.0.0", port=PORT)
 
 def main():
-    logging.info("✅ البوت يعمل الآن...")
-
-    # تشغيل Flask في خيط منفصل
     threading.Thread(target=run_flask).start()
-
-    # تشغيل بوت التليغرام مع الويبهوك
-    app.run_webhook(
-        listen="0.0.0.0",
-        port=BOT_PORT,
-        url_path=TOKEN,
-        webhook_url=f"{WEBHOOK_URL}/{TOKEN}"
-    )
+    logging.info("✅ تشغيل البوت بـ polling...")
+    app.run_polling()
 
 if __name__ == '__main__':
     main()
