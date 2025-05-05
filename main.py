@@ -348,8 +348,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
                 الرسالة: "{message}"
 
-                الرد يجب أن يكون رقمًا فقط بين 1 و5."""
-
+                الرد يجب أن يكون رقمًا فقط بين 1 و6."""
+.
             intent = generate_gemini_response(intent_prompt).strip()
             intent = str(int(intent))
             logging.info(f"🔍 [LOG] - النية المستلمة من Gemini: {intent}")
