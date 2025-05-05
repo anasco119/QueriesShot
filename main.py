@@ -551,7 +551,7 @@ Great pick, {user_name}!
 
                 if not response.strip():
                     print("⚠️ الرد فارغ. لم يتم إرسال أي شيء.")
-                        return
+                    return
 
                 await update.message.reply_text(response, parse_mode='MarkdownV2')
             else:
