@@ -511,6 +511,7 @@ Keep going, you doing a great job!
                     logging.error(f"❌ [LOG] - خطأ عام أثناء معالجة النية: {e}")
                     print(f"❌ [LOG] - خطأ عام أثناء معالجة النية: {e}")
             elif intent == "6":
+                message = update.message.text
                 user_name = get_user_name(update)
                 Prompt = f"""اكتب ردًا منسقًا بلغة MarkdownV2 لشرح كلمة إنجليزية، باتباع تنسيق ثابت وجذاب بصريًا.  
 يُستخدم هذا الرد في شات مع طلاب يتعلمون الإنجليزية، لذا يجب أن يكون مختصرًا، واضحًا، ومُحفّزًا.
@@ -533,8 +534,10 @@ Great pick, {user_name}!
 3. لا تضف أي شرح خارجي أو تنسيقات إضافية.  
 4. غيّر العبارة الختامية في كل مرة، لكن اجعلها قصيرة وتحفيزية، بنفس فكرة "استمر في التعلم".
 5. يمكنك استبدال great pick بعبارة قصيرة مشابهة او تركها كما هي
-الرسالة التي تحتوي الكلمة او العبارة المطلوبة: "{message}"
 6. إذا سؤل عن عبارة phrase او idiom تابع نفس النسق في التوضيح مع توضيح الشرح اكثر بإستخدام visual analogy مثل عبارات تخيل كذا ...
+
+الرسالة التي تحتوي الكلمة او العبارة المطلوبة = "{message}"
+
 """
                 response = generate_gemini_response(prompt)
                 await update.message.reply_text(response, parse_mode='Markdown')
