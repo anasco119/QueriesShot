@@ -79,9 +79,9 @@ try:
 except Exception as e:
     logging.error(f"❌ خطأ في إنشاء الجداول: {e}")
 
-def escape_markdown_v2(text):
-    escape_chars = r'[_*[\]()~`>#+\-=|{}.!]'
-    return re.sub(escape_chars, lambda m: '\\' + m.group(0), text)
+def escape_markdown_v2(text: str) -> str:
+    escape_chars = r'_*[]()~`>#+-=|{}.!\\'
+    return re.sub(r'([{}])'.format(re.escape(escape_chars)), r'\\\1', text)
 
 def get_user_name(update):
     user = update.message.from_user
