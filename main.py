@@ -340,11 +340,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 # تحقق من نية الرسالة أولاً
             intent_prompt = f"""حدد نية الرسالة التالية من الخيارات التالية فقط:
                 1. إستفسار أو أي مسألة تتعلق بالقناة أو أي طلب مساعدة ذو علاقة بالتعلم
-                2.  قطعة قصيرة او طويلة بالانجليزية 
+                2.  قطعة قصيرة او طويلة بالانجليزية مقرؤءة تتحدث عن موضوع انشائي
                 3. خطأ إملائي وغرامر
                 4. مخالفة، سلوك غير لائق أو ترويج ومضايقة أو كلمات بذئية أو رسائل spam 
                 5. أخرى (غير ذات صلة) أي خارج سياق القناة و هي قناة تعلم الانجليزية
-                
+                6. السؤال عن معنى كلمة او عبارة بالانجليزية 
 
                 الرسالة: "{message}"
 
@@ -510,6 +510,11 @@ Keep going, you doing a great job!
                 except Exception as e:
                     logging.error(f"❌ [LOG] - خطأ عام أثناء معالجة النية: {e}")
                     print(f"❌ [LOG] - خطأ عام أثناء معالجة النية: {e}")
+            elif intent == "6":
+                user_name = get_user_name(update)
+                prompt = f""" 
+                response = generate_gemini_response(prompt)
+                await update.message.reply_text(response, parse_mode='Markdown')
             else:
                 logging.info(f"❓ [LOG] - النية غير معروفة: {intent}")
                 print(f"❓ [LOG] - النية غير معروفة: {intent}")
