@@ -549,9 +549,9 @@ Great pick, {user_name}!
                 print(f"📬 الرد المستلم من Gemini:\n{response}")
                 print("===== END DEBUG =====\n")
 
-                    if not response.strip():
-                        print("⚠️ الرد فارغ. لم يتم إرسال أي شيء.")
-                            return
+                if not response.strip():
+                    print("⚠️ الرد فارغ. لم يتم إرسال أي شيء.")
+                        return
 
                 await update.message.reply_text(response, parse_mode='MarkdownV2')
             else:
