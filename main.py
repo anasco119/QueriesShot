@@ -541,8 +541,19 @@ Great pick, {user_name}!
 الرسالة التي تحتوي الكلمة او العبارة المطلوبة = "{message}"
 
 """
+                print("\n===== DEBUG: نية 6 =====")
+                  print(f"📨 الرسالة الأصلية: {message}")
+                  print(f"👤 اسم المستخدم: {user_name}")
+                  print(f"🧠 البرومبت المُرسل إلى Gemini:\n{prompt}")
                 response = generate_gemini_response(prompt)
-                await update.message.reply_text(response, parse_mode='Markdown')
+                print(f"📬 الرد المستلم من Gemini:\n{response}")
+                  print("===== END DEBUG =====\n")
+
+                    if not response.strip():
+                        print("⚠️ الرد فارغ. لم يتم إرسال أي شيء.")
+                            return
+
+                await update.message.reply_text(response, parse_mode='MarkdownV2')
             else:
                 logging.info(f"❓ [LOG] - النية غير معروفة: {intent}")
                 print(f"❓ [LOG] - النية غير معروفة: {intent}")
