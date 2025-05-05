@@ -19,6 +19,7 @@ import google.generativeai as genai
 import pytz  # إضافة مكتبة pytz لضبط التوقيت
 from flask import Flask, request, jsonify
 import threading
+import re
 
 
 # تهيئة التسجيل (logging)
@@ -77,6 +78,10 @@ try:
     logging.info("✅ تم إنشاء الجداول بنجاح!")
 except Exception as e:
     logging.error(f"❌ خطأ في إنشاء الجداول: {e}")
+
+def escape_markdown_v2(text):
+    escape_chars = r'[_*[\]()~`>#+\-=|{}.!]'
+    return re.sub(escape_chars, lambda m: '\\' + m.group(0), text)
 
 def get_user_name(update):
     user = update.message.from_user
@@ -553,7 +558,8 @@ Great pick, {user_name}!
                     print("⚠️ الرد فارغ. لم يتم إرسال أي شيء.")
                     return
 
-                await update.message.reply_text(response, parse_mode='MarkdownV2')
+                escaped_response = escape_markdown_v2(response)
+                await update.message.reply_text(escaped_response, parse_mode='MarkdownV2')
             else:
                 logging.info(f"❓ [LOG] - النية غير معروفة: {intent}")
                 print(f"❓ [LOG] - النية غير معروفة: {intent}")
