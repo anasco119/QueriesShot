@@ -328,6 +328,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         # إذا كانت الرسالة في المجموعة
         elif chat_id == ALLOWED_GROUP_ID:
+                if 'sender_chat' in message:
+                    return  # تجاهل الرسائل المرسلة باسم القناة أو المجموعة
         # تطبيق القيود المطبقة في المجموعة
             if not is_within_working_hours():
                 return  # تجاهل الرسالة خارج ساعات العمل
